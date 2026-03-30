@@ -1,0 +1,10 @@
+pandoc: 3.1.11
+pkgdown: 2.2.0
+pkgdown_sha: ~
+articles:
+  balanco-hidrico: balanco-hidrico.html
+  water-balance: water-balance.html
+last_built: 2026-03-30T19:27Z
+urls:
+  reference: https://joaobtj.github.io/irritool/reference
+  article: https://joaobtj.github.io/irritool/articles
