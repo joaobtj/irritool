@@ -28,12 +28,11 @@
 #' @export
 #'
 #' @examples
-#' target_longitude = -50.5995
-#' target_latitude = -27.2863
-#' weather_variables = c("pr", "ETo", "Tmax")
-#' date_range = c("1983-01-01", "1983-03-31")
-#' nc_files_directory = "D:/clima_Xavier"
-#'
+#' target_longitude <- -50.5995
+#' target_latitude <- -27.2863
+#' weather_variables <- c("pr", "ETo", "Tmax")
+#' date_range <- c("1983-01-01", "1983-03-31")
+#' nc_files_directory <- "D:/clima_Xavier"
 #'
 #' \dontrun{
 #' # Ensure the path to your NetCDF files is correct
@@ -47,11 +46,10 @@
 #' print(head(weather_data_point))
 #' }
 get_brdwgd_weather <- function(target_longitude,
-                                   target_latitude,
-                                   weather_variables = c("pr", "Tmin", "Tmax", "Rs", "RH", "u2", "ETo"),
-                                   date_range = NULL,
-                                   nc_files_directory = ".") {
-
+                               target_latitude,
+                               weather_variables = c("pr", "Tmin", "Tmax", "Rs", "RH", "u2", "ETo"),
+                               date_range = NULL,
+                               nc_files_directory = ".") {
   # --- Validate Inputs ---
   if (!is.numeric(target_longitude) || length(target_longitude) != 1) {
     stop("'target_longitude' must be a single numeric value.")
@@ -67,8 +65,10 @@ get_brdwgd_weather <- function(target_longitude,
   allowed_vars <- c("pr", "Tmin", "Tmax", "Rs", "RH", "u2", "ETo")
   if (!all(weather_variables %in% allowed_vars)) {
     invalid_vars <- weather_variables[!weather_variables %in% allowed_vars]
-    stop(paste("Invalid weather variable(s):", paste(invalid_vars, collapse = ", "),
-               ". Allowed variables are:", paste(allowed_vars, collapse = ", ")))
+    stop(paste(
+      "Invalid weather variable(s):", paste(invalid_vars, collapse = ", "),
+      ". Allowed variables are:", paste(allowed_vars, collapse = ", ")
+    ))
   }
 
   if (!dir.exists(nc_files_directory)) {
@@ -102,13 +102,17 @@ get_brdwgd_weather <- function(target_longitude,
     # Construct regex pattern to find relevant NetCDF files for the current variable
     # Assumes files are named like: [variable]_*.nc (e.g., pr_1961_1970_BRDWGD.nc)
     nc_file_pattern <- paste0("^", current_variable_name, "_.*\\.nc$")
-    variable_nc_files <- list.files(path = nc_files_directory,
-                                    pattern = nc_file_pattern,
-                                    full.names = TRUE) # Get full paths
+    variable_nc_files <- list.files(
+      path = nc_files_directory,
+      pattern = nc_file_pattern,
+      full.names = TRUE
+    ) # Get full paths
 
     if (length(variable_nc_files) == 0) {
-      warning(paste("No NetCDF files found for variable '", current_variable_name,
-                    "' in directory '", nc_files_directory, "' with pattern '", nc_file_pattern, "'. Skipping this variable."))
+      warning(paste(
+        "No NetCDF files found for variable '", current_variable_name,
+        "' in directory '", nc_files_directory, "' with pattern '", nc_file_pattern, "'. Skipping this variable."
+      ))
       next # Skip to the next variable
     }
 
@@ -152,12 +156,12 @@ get_brdwgd_weather <- function(target_longitude,
 
       # Find the grid point closest to the target coordinates
       # Uses Cartesian distance on degrees (a common simplification for nearest grid cell)
-      closest_point_info <- expand.grid(lat_idx = seq_along(nc_latitudes), lon_idx = seq_along(nc_longitudes))  |>
+      closest_point_info <- expand.grid(lat_idx = seq_along(nc_latitudes), lon_idx = seq_along(nc_longitudes)) |>
         dplyr::mutate(
           nc_lat = nc_latitudes[lat_idx],
           nc_lon = nc_longitudes[lon_idx],
           distance = sqrt((nc_lon - target_longitude)^2 + (nc_lat - target_latitude)^2)
-        )  |>
+        ) |>
         dplyr::slice_min(distance, n = 1, with_ties = FALSE) # Get the single closest point
 
       # Determine time indices within the current file that overlap with the requested date_range
@@ -195,9 +199,10 @@ get_brdwgd_weather <- function(target_longitude,
       # Assumes the NetCDF variable name matches current_variable_name (e.g., "pr", "Tmin")
       data_values <- tryCatch(
         ncdf4::ncvar_get(nc_file_obj,
-                         varid = current_variable_name,
-                         start = start_indices,
-                         count = count_indices),
+          varid = current_variable_name,
+          start = start_indices,
+          count = count_indices
+        ),
         error = function(e) {
           warning(paste("Could not read variable '", current_variable_name, "' from file:", nc_file_path, "-", e$message))
           NULL
@@ -212,9 +217,11 @@ get_brdwgd_weather <- function(target_longitude,
       selected_timestamps <- nc_timestamps[start_time_index_in_file:end_time_index_in_file]
 
       # Check if length of data_values matches selected_timestamps
-      if(length(data_values) != length(selected_timestamps)) {
-        warning(paste("Mismatch between data length and timestamp length for variable '",
-                      current_variable_name, "' in file:", nc_file_path, ". Skipping this file's data for this variable."))
+      if (length(data_values) != length(selected_timestamps)) {
+        warning(paste(
+          "Mismatch between data length and timestamp length for variable '",
+          current_variable_name, "' in file:", nc_file_path, ". Skipping this file's data for this variable."
+        ))
         next
       }
 
@@ -229,7 +236,7 @@ get_brdwgd_weather <- function(target_longitude,
 
     # Combine data from all files for the current variable (if any were read)
     if (length(data_from_files_list) > 0) {
-      all_periods_for_variable <- dplyr::bind_rows(data_from_files_list)  |>
+      all_periods_for_variable <- dplyr::bind_rows(data_from_files_list) |>
         dplyr::distinct(date, .keep_all = TRUE) # In case of overlapping files for same variable
       all_variables_data_list[[current_variable_name]] <- all_periods_for_variable
     }
@@ -243,12 +250,12 @@ get_brdwgd_weather <- function(target_longitude,
 
   # Use purrr::reduce for joining all data frames in the list
   final_weather_df <- all_variables_data_list |>
-    purrr::reduce(dplyr::full_join, by = c("date", "lat", "lon"))  |>
+    purrr::reduce(dplyr::full_join, by = c("date", "lat", "lon")) |>
     dplyr::arrange(date) # Sort by date
 
   # Final filter to ensure data is strictly within the originally requested date_range,
   # as file slicing might have included slightly more at the boundaries.
-  final_weather_df <- final_weather_df  |>
+  final_weather_df <- final_weather_df |>
     dplyr::filter(date >= start_date_requested, date <= end_date_requested)
 
   return(final_weather_df)
