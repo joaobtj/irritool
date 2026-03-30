@@ -1,4 +1,24 @@
-url: ~
+url: https://joaobtj.github.io/irritool/
+
 template:
   bootstrap: 5
 
+navbar:
+  structure:
+    left:
+      - home
+      - reference
+      - articles
+    right:
+      - github
+  components:
+    articles:
+      text: "Tutoriais / Articles"
+      menu:
+        - text: "🇧🇷 Em Português"
+        - text: "Simulação do Balanço Hídrico Diário"
+          href: articles/balanco-hidrico-diario.html
+        - text: "---"
+        - text: "🇺🇸 In English"
+        - text: "Daily Soil Water Balance Simulation"
+          href: articles/daily-water-balance.html
