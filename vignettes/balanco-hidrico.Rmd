@@ -1,0 +1,102 @@
+---
+title: "Simulação do Balanço Hídrico Diário"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Simulação do Balanço Hídrico Diário}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+O pacote **irritool** está em contínuo desenvolvimento e oferece um conjunto crescente de ferramentas em R para a modelagem do sistema solo-água-planta-atmosfera. Embora o pacote inclua recursos para a extração de dados climáticos em grade e outras análises agronômicas, este tutorial foca especificamente no fluxo de trabalho central do manejo de irrigação.
+
+Abaixo, demonstramos os passos fundamentais para estimar as necessidades hídricas de uma cultura e simular o balanço hídrico diário do solo, o que é muito útil para o planejamento de safras e análises de déficit hídrico.
+
+## 1. Preparando os Dados Climáticos
+
+Para calcular o balanço de água no solo, o primeiro passo é obter dados meteorológicos diários. Para este exemplo didático, vamos simular 65 dias de dados de evapotranspiração de referência (ET0) e precipitação diretamente no R.
+
+```{r setup-data}
+library(irritool)
+
+# Simulando 65 dias de dados climáticos para o ciclo da cultura
+dias_ciclo <- 65
+set.seed(42)
+
+# ET0 em mm/dia
+eto_sim <- round(runif(dias_ciclo, 3, 6), 1)
+
+# Chuva em mm/dia (maior parte dos dias secos com alguns eventos isolados de chuva)
+chuva_sim <- round(sample(c(rep(0, 55), runif(10, 5, 30))), 0)
+```
+
+## 2. Construindo a Curva do Coeficiente de Cultura (Kc)
+
+As culturas consomem água em taxas diferentes dependendo da sua fase fenológica. A função `calc_kc_curve()` utiliza a metodologia da FAO-56 para construir a série diária de Kc.
+
+Vamos simular um ciclo de 65 dias para uma hortaliça (ex: Alface), dividida em quatro fases: Inicial, Desenvolvimento da Cultura, Fase Intermediária e Fase Final.
+
+```{r kc-curve, fig.width=7, fig.height=5}
+# Definindo os parâmetros de Kc e a duração das fases (em dias)
+parametros_kc <- c(0.7, 1.0, 0.95)
+fases <- c(15, 20, 20, 10)
+
+curva_alface <- calc_kc_curve(
+  kc_points = parametros_kc,
+  stage_lengths = fases,
+  crop = "Alface"
+)
+
+# Visualizando o gráfico gerado automaticamente
+curva_alface$kc_plot
+```
+
+## 3. Simulando o Balanço Hídrico no Solo
+
+Com os dados climáticos e os valores diários de Kc estabelecidos, podemos rodar a simulação da umidade do solo. A função `calc_water_balance()` monitora a Capacidade Total de Água Disponível (TAW), a Água Facilmente Disponível (RAW) e a depleção atual (déficit).
+
+Utilizaremos a regra de irrigação por limite (`"threshold"`), que aplica água automaticamente sempre que a depleção do solo ultrapassar a RAW, garantindo que a planta não sofra estresse hídrico.
+
+```{r water-balance}
+# Parâmetros do solo e sistema radicular
+profundidade_raiz <- 300  # mm
+umidade_cc <- 0.30        # Capacidade de campo (m3/m3)
+umidade_pmp <- 0.15       # Ponto de murcha permanente (m3/m3)
+fator_p <- 0.55           # Fator de depleção (p)
+
+resultado_balanco <- calc_water_balance(
+  et0 = eto_sim,
+  rainfall = chuva_sim,
+  daily_kc_values = curva_alface$kc_serie,
+  root_depth = profundidade_raiz,
+  theta_fc = umidade_cc,
+  theta_wp = umidade_pmp,
+  depletion_factor = fator_p,
+  initial_depletion = 0, # Iniciando na capacidade de campo
+  irrigation_rule = "threshold"
+)
+```
+
+### Analisando os Resultados
+
+A função retorna tanto os dados diários detalhados quanto um resumo dos totais acumulados ao longo do ciclo.
+
+```{r balance-summary}
+# Verificando as lâminas totais para o ciclo completo
+resultado_balanco$summary_depths
+```
+
+O sumário mostra exatamente qual foi a lâmina total de irrigação aplicada e quantos eventos de irrigação foram acionados para manter a cultura fora da zona de estresse.
+
+Também podemos inspecionar o registro diário detalhado para analisar a dinâmica da água dia a dia:
+
+```{r balance-head}
+# Visualizando os primeiros 10 dias do balanço
+head(resultado_balanco$water_balance_data, 10)
+```

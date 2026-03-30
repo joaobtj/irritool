@@ -1,0 +1,89 @@
+---
+output: github_document
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# irritool
+
+The **irritool** package provides computational tools in R for irrigation.
+
+## Installation
+
+You can install the development version of irritool from [GitHub](https://github.com/) with:
+
+``` {r eval=FALSE}
+# install.packages("devtools")
+devtools::install_github("joaobtj/irritool")
+```
+
+## Main Features
+
+* `extract_brdwgd_point()`: Extracts time series of meteorological variables (precipitation, ETo, temperatures, radiation, etc.) for specific coordinates from the BR-DWGD gridded database NetCDF files (Xavier et al.).
+* `calc_kc_curve()`: Builds the daily crop coefficient (Kc) time series based on the four development stages of the FAO-56 methodology, returning the numeric values and a ready-to-use `ggplot2` chart.
+* `calc_water_balance()`: Calculates the daily soil water balance for the crop, estimating actual evapotranspiration (ETc), water deficit, irrigation requirements, and water surplus (deep percolation/runoff).
+
+## Example Usage
+
+Below is a basic workflow showing how the package functions integrate to simulate a crop cycle.
+
+```{r example, warning=FALSE, message=FALSE}
+library(irritool)
+
+# 1. Obtain climate data for a coordinate (requires local NetCDF files)
+# As this is a reproducible example, we leave the extraction commented out:
+# climate_data <- extract_brdwgd_point(
+#   target_longitude = -50.59, 
+#   target_latitude = -27.28, 
+#   weather_variables = c("pr", "ETo"),
+#   nc_files_directory = "path/to/files"
+# )
+
+# For this example, we will use mock climate data:
+cycle_days <- 65
+set.seed(123)
+rain_data <- sample(c(rep(0, 60), runif(5, 5, 25)))
+eto_data <- runif(cycle_days, 3, 5)
+
+# 2. Generate the Kc curve for the crop (e.g., Lettuce)
+lettuce_kc <- calc_kc_curve(
+  kc_points = c(0.7, 1.0, 0.95),
+  stage_lengths = c(15, 20, 20, 10),
+  crop = "Lettuce"
+)
+
+# View the generated plot
+print(lettuce_kc$kc_plot)
+```
+
+```{r example_balance}
+# 3. Simulate the soil water balance
+water_balance <- calc_water_balance(
+  et0 = eto_data,
+  rainfall = rain_data,
+  daily_kc_values = lettuce_kc$kc_serie, # Consuming the output from the previous function
+  root_depth = 300,
+  theta_fc = 0.30,
+  theta_wp = 0.15,
+  depletion_factor = 0.55,
+  irrigation_rule = "threshold"
+)
+
+# View the first few days of the soil water balance
+head(water_balance$water_balance_data)
+
+# View the summary depths (totals)
+print(water_balance$summary_depths)
+```
+
+## References
+
+* Allen, R. G., Pereira, L. S., Raes, D., & Smith, M. (1998). *Crop evapotranspiration - Guidelines for computing crop water requirements*. FAO Irrigation and drainage paper 56.
+* Xavier, A. C., King, C. W., & Scanlon, B. R. (2016). Daily gridded meteorological variables in Brazil (1980–2013). *International Journal of Climatology*.
