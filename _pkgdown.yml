@@ -17,8 +17,8 @@ navbar:
       menu:
         - text: "🇧🇷 Em Português"
         - text: "Simulação do Balanço Hídrico Diário"
-          href: articles/balanco-hidrico-diario.html
+          href: articles/balanco-hidrico.html
         - text: "---"
         - text: "🇺🇸 In English"
         - text: "Daily Soil Water Balance Simulation"
-          href: articles/daily-water-balance.html
+          href: articles/water-balance.html
