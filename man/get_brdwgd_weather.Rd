@@ -32,12 +32,11 @@ from the Brazilian Daily Weather Gridded Data (BR-DWGD) NetCDF files. The functi
 the closest grid cell to the target coordinates.
 }
 \examples{
-target_longitude = -50.5995
-target_latitude = -27.2863
-weather_variables = c("pr", "ETo", "Tmax")
-date_range = c("1983-01-01", "1983-03-31")
-nc_files_directory = "D:/clima_Xavier"
-
+target_longitude <- -50.5995
+target_latitude <- -27.2863
+weather_variables <- c("pr", "ETo", "Tmax")
+date_range <- c("1983-01-01", "1983-03-31")
+nc_files_directory <- "D:/clima_Xavier"
 
 \dontrun{
 # Ensure the path to your NetCDF files is correct
