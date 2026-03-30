@@ -1,8 +1,8 @@
 ---
-title: "Simulação do Balanço Hídrico Diário"
+title: "Balanço Hídrico Diário para Irrigação"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Simulação do Balanço Hídrico Diário}
+  %\VignetteIndexEntry{Balanço Hídrico Diário para Irrigação}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
