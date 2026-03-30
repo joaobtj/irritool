@@ -2,7 +2,7 @@
 title: "Daily Soil Water Balance for Irrigation"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Daily Soil Water Balance Simulation}
+  %\VignetteIndexEntry{Daily Soil Water Balance for Irrigation}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
