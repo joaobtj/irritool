@@ -50,8 +50,8 @@ FAO Irrigation and drainage paper 56.
 ## Examples
 
 ``` r
-kc_points=kc_params_lettuce <- c(0.7, 1.0, 0.95) # Kc_ini, Kc_mid, Kc_end
-stage_lengths=stage_lengths_lettuce <- c(15, 20, 20, 10) # L_ini, L_dev, L_mid, L_late
+kc_points <- kc_params_lettuce <- c(0.7, 1.0, 0.95) # Kc_ini, Kc_mid, Kc_end
+stage_lengths <- stage_lengths_lettuce <- c(15, 20, 20, 10) # L_ini, L_dev, L_mid, L_late
 lettuce_data <- calc_kc_curve(
   kc_points = kc_params_lettuce,
   stage_lengths = stage_lengths_lettuce,
