@@ -39,8 +39,8 @@ library(irritool)
 # 1. Obtain climate data for a coordinate (requires local NetCDF files)
 # As this is a reproducible example, we leave the extraction commented out:
 # climate_data <- extract_brdwgd_point(
-#   target_longitude = -50.59, 
-#   target_latitude = -27.28, 
+#   target_longitude = -50.59,
+#   target_latitude = -27.28,
 #   weather_variables = c("pr", "ETo"),
 #   nc_files_directory = "path/to/files"
 # )

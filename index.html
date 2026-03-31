@@ -52,7 +52,8 @@
   </div>
 </nav><div class="container template-home">
 <div class="row">
-  <main id="main" class="col-md-9"><div class="section level1">
+  <main id="main" class="col-md-9">
+<div class="section level1">
 <div class="page-header"><h1 id="irritool">irritool<a class="anchor" aria-label="anchor" href="#irritool"></a>
 </h1></div>
 <p>The <strong>irritool</strong> package provides computational tools in R for irrigation.</p>
@@ -86,8 +87,8 @@
 <span><span class="co"># 1. Obtain climate data for a coordinate (requires local NetCDF files)</span></span>
 <span><span class="co"># As this is a reproducible example, we leave the extraction commented out:</span></span>
 <span><span class="co"># climate_data &lt;- extract_brdwgd_point(</span></span>
-<span><span class="co">#   target_longitude = -50.59, </span></span>
-<span><span class="co">#   target_latitude = -27.28, </span></span>
+<span><span class="co">#   target_longitude = -50.59,</span></span>
+<span><span class="co">#   target_latitude = -27.28,</span></span>
 <span><span class="co">#   weather_variables = c("pr", "ETo"),</span></span>
 <span><span class="co">#   nc_files_directory = "path/to/files"</span></span>
 <span><span class="co"># )</span></span>
@@ -167,6 +168,7 @@
 </ul>
 </div>
 </div>
+
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
@@ -198,7 +200,13 @@
 </ul>
 </div>
 
-
+<div class="dev-status">
+<h2 data-toc-skip>Dev status</h2>
+<ul class="list-unstyled">
+<li><a href="https://github.com/joaobtj/irritool/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/joaobtj/irritool/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a></li>
+<li><a href="https://lifecycle.r-lib.org/articles/stages.html#experimental" class="external-link"><img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental"></a></li>
+</ul>
+</div>
 
   </aside>
 </div>
