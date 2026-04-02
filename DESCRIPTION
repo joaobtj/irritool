@@ -2,7 +2,11 @@ Package: irritool
 Title: Irrigation Tools in R
 Version: 0.0.0.9000
 Authors@R: 
-    person("Joao Batista", "Tolentino Jr", , "joa.tolentino@ufsc.br", role = c("aut", "cre"))
+    person(given="Joao Batista", 
+    family="Tolentino Jr", 
+    email="joao.tolentino@ufsc.br", 
+    role = c("aut", "cre"),
+    comment = list(ORCID = "0000-0003-1303-4202"))
 Description: Provides a collection of computational tools for irrigation.
 License: MIT + file LICENSE
 Encoding: UTF-8
