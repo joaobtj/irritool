@@ -5,15 +5,15 @@
 \title{Flow unit conversion}
 \usage{
 flow_unit(
-  q,
-  q_unit = c("m3/s", "l/s", "m3/h", "l/h"),
+  flow_rate,
+  flow_unit = c("m3/s", "l/h", "m3/h", "l/s"),
   operator = c("div", "mult")
 )
 }
 \arguments{
-\item{q}{Flow rate value.}
+\item{flow_rate}{Flow rate value.}
 
-\item{q_unit}{Flow measurement unit. Options are "m3/s", "l/h", "m3/h", or "l/s". Default is "m3/s".}
+\item{flow_unit}{Flow measurement unit. Options are "m3/s", "l/h", "m3/h", or "l/s". Default is "m3/s".}
 
 \item{operator}{Character indicating the operation: "div" to convert to m3/s, "mult" to convert from m3/s.}
 }

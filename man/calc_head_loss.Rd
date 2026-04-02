@@ -5,54 +5,49 @@
 \title{Calculate head loss in pipes by different methods}
 \usage{
 calc_head_loss(
-  d,
-  q,
-  q_unit = c("m3/s", "l/h", "m3/h"),
-  l,
+  diameter,
+  flow_rate,
+  flow_unit = c("m3/s", "l/h", "m3/h", "l/s"),
+  length,
   method = c("darcy_colebrook", "hazen_williams", "flamant", "swamee_jain", "blasius",
-    "haaland"),
-  rc = 1.5e-06,
-  hw_c = 140,
-  flamant_b = 0.000135,
-  v = 1.01e-06,
-  g = 9.81,
-  x1 = 0.06
+    "haaland", "churchill", "chen"),
+  roughness = 1.5e-06,
+  hazen_coef = 140,
+  flamant_coef = 0.000135,
+  viscosity = 1.01e-06,
+  gravity = 9.81,
+  initial_guess = 0.06
 )
 }
 \arguments{
-\item{d}{Diameter of the pipe in millimeters (mm).}
+\item{diameter}{Diameter of the pipe in meters (m).}
 
-\item{q}{Flow rate value.}
+\item{flow_rate}{Flow rate value.}
 
-\item{q_unit}{Flow measurement unit. Options are "m3/s", "l/h", "m3/h", or "l/s". Default is "m3/s".}
+\item{flow_unit}{Flow measurement unit. Options are "m3/s", "l/h", "m3/h", or "l/s". Default is "m3/s".}
 
-\item{l}{Length of the pipe in meters (m).}
+\item{length}{Length of the pipe in meters (m).}
 
 \item{method}{The method used to calculate head loss. Options are \code{"darcy_colebrook"} (default),
-\code{"hazen_williams"}, \code{"flamant"}, \code{"swamee_jain"}, \code{"blasius"}, and \code{"haaland"}.}
+\code{"hazen_williams"}, \code{"flamant"}, \code{"swamee_jain"}, \code{"blasius"}, \code{"haaland"},
+\code{"churchill"}, and \code{"chen"}.}
 
-\item{rc}{Absolute roughness of the pipe in meters (m). Used for Darcy-Weisbach methods.
+\item{roughness}{Absolute roughness of the pipe in meters (m). Used for Darcy-Weisbach methods.
 Default is \code{1.5e-6} (typical for PVC and Polyethylene).}
 
-\item{hw_c}{Hazen-Williams roughness coefficient (dimensionless). Default is 140 (smooth plastic pipes).}
+\item{hazen_coef}{Hazen-Williams roughness coefficient (dimensionless). Default is 140 (smooth plastic pipes).}
 
-\item{flamant_b}{Flamant roughness coefficient. Default is 0.000135 (plastic pipes).}
+\item{flamant_coef}{Flamant roughness coefficient. Default is 0.000135 (plastic pipes).}
 
-\item{v}{Kinematic viscosity of the fluid in square meters per second (m^2/s).
+\item{viscosity}{Kinematic viscosity of the fluid in square meters per second (m^2/s).
 Default is the value for water at 20 degrees Celsius (\code{1.01e-6}).}
 
-\item{g}{Gravitational acceleration in m/s^2. Default is 9.81.}
+\item{gravity}{Gravitational acceleration in m/s^2. Default is 9.81.}
 
-\item{x1}{Initial parameter for the Newton-Raphson method (Colebrook). Default is 0.06.}
+\item{initial_guess}{Initial parameter for the Newton-Raphson method (Colebrook). Default is 0.06.}
 }
 \value{
-A list containing:
-\itemize{
-\item \code{hf}: Head loss in meters (m).
-\item \code{method}: The calculation method used.
-\item \code{regime}: Flow regime (only returned for Darcy-Weisbach methods).
-\item \code{f}: Darcy friction factor (only returned for Darcy-Weisbach methods).
-}
+A numeric value representing the friction head loss in meters (m).
 }
 \description{
 \code{calc_head_loss} calculates the friction head loss in pipes using various methods
@@ -60,7 +55,7 @@ commonly applied in agricultural hydraulics, including Darcy-Weisbach (with mult
 friction factor approximations), Hazen-Williams, and Flamant.
 }
 \details{
-\strong{Reference values for Absolute Roughness (rc) in meters:}
+\strong{Reference values for Absolute Roughness in meters:}
 \itemize{
 \item PVC and Polyethylene (PE): \code{1.5e-6} to \code{7.0e-6}
 \item Aluminum (with couplers): \code{1.5e-4} to \code{2.0e-4}
@@ -70,11 +65,22 @@ friction factor approximations), Hazen-Williams, and Flamant.
 }
 \examples{
 # Darcy-Weisbach with Colebrook-White (default)
-calc_head_loss(d = 50e-3, q = 10, q_unit = "m3/h", l = 100)
+calc_head_loss(diameter = 0.05, flow_rate = 10, flow_unit = "m3/h", length = 100)
 
 # Hazen-Williams for a PVC pipe
-calc_head_loss(d = 50e-3, q = 10, q_unit = "m3/h", l = 100, method = "hazen_williams")
-
-# Explicit Swamee-Jain approximation
-calc_head_loss(d = 50e-3, q = 10, q_unit = "m3/h", l = 100, method = "swamee_jain")
+calc_head_loss(diameter = 0.05, flow_rate = 10, flow_unit = "m3/h", length = 100,
+method = "hazen_williams")
+}
+\references{
+\itemize{
+\item Blasius, H. (1913). Das Ähnlichkeitsgesetz bei Reibungsvorgängen in Flüssigkeiten. \emph{Forschungsheft}, 131, 1-40.
+\item Bernardo, S., Soares, A. A., & Mantovani, E. C. (2019). \emph{Manual de Irrigação} (9th ed.). Editora UFV.
+\item Chen, N. H. (1979). An explicit equation for friction factor in pipe. \emph{Industrial & Engineering Chemistry Fundamentals}, 18(3), 296-297.
+\item Churchill, S. W. (1977). Friction-factor equation spans all fluid-flow regimes. \emph{Chemical Engineering}, 84(24), 91-92.
+\item Colebrook, C. F. (1939). Turbulent flow in pipes... \emph{Journal of the Institution of Civil Engineers}, 11(4), 133-156.
+\item Dunlop, E. J. (1991). \emph{Wallingford software: The hydraulic friction of pipes}. Report SR 281.
+\item Haaland, S. E. (1983). Simple and explicit formulas for the friction factor... \emph{Journal of Fluids Engineering}, 105(1), 89-90.
+\item Swamee, P. K., & Jain, A. K. (1976). Explicit equations for pipe-flow problems. \emph{Journal of the Hydraulics Division}, 102(5), 657-664.
+\item Williams, G. S., & Hazen, A. (1905). \emph{Hydraulic tables}. John Wiley & Sons.
+}
 }
