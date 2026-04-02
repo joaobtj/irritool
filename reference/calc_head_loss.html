@@ -51,18 +51,18 @@ friction factor approximations), Hazen-Williams, and Flamant.</p>
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">calc_head_loss</span><span class="op">(</span></span>
-<span>  <span class="va">d</span>,</span>
-<span>  <span class="va">q</span>,</span>
-<span>  q_unit <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"m3/s"</span>, <span class="st">"l/h"</span>, <span class="st">"m3/h"</span><span class="op">)</span>,</span>
-<span>  <span class="va">l</span>,</span>
+<span>  <span class="va">diameter</span>,</span>
+<span>  <span class="va">flow_rate</span>,</span>
+<span>  flow_unit <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"m3/s"</span>, <span class="st">"l/h"</span>, <span class="st">"m3/h"</span>, <span class="st">"l/s"</span><span class="op">)</span>,</span>
+<span>  <span class="va">length</span>,</span>
 <span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"darcy_colebrook"</span>, <span class="st">"hazen_williams"</span>, <span class="st">"flamant"</span>, <span class="st">"swamee_jain"</span>, <span class="st">"blasius"</span>,</span>
-<span>    <span class="st">"haaland"</span><span class="op">)</span>,</span>
-<span>  rc <span class="op">=</span> <span class="fl">1.5e-06</span>,</span>
-<span>  hw_c <span class="op">=</span> <span class="fl">140</span>,</span>
-<span>  flamant_b <span class="op">=</span> <span class="fl">0.000135</span>,</span>
-<span>  v <span class="op">=</span> <span class="fl">1.01e-06</span>,</span>
-<span>  g <span class="op">=</span> <span class="fl">9.81</span>,</span>
-<span>  x1 <span class="op">=</span> <span class="fl">0.06</span></span>
+<span>    <span class="st">"haaland"</span>, <span class="st">"churchill"</span>, <span class="st">"chen"</span><span class="op">)</span>,</span>
+<span>  roughness <span class="op">=</span> <span class="fl">1.5e-06</span>,</span>
+<span>  hazen_coef <span class="op">=</span> <span class="fl">140</span>,</span>
+<span>  flamant_coef <span class="op">=</span> <span class="fl">0.000135</span>,</span>
+<span>  viscosity <span class="op">=</span> <span class="fl">1.01e-06</span>,</span>
+<span>  gravity <span class="op">=</span> <span class="fl">9.81</span>,</span>
+<span>  initial_guess <span class="op">=</span> <span class="fl">0.06</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -70,81 +70,89 @@ friction factor approximations), Hazen-Williams, and Flamant.</p>
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
 
 
-<dl><dt id="arg-d">d<a class="anchor" aria-label="anchor" href="#arg-d"></a></dt>
-<dd><p>Diameter of the pipe in millimeters (mm).</p></dd>
+<dl><dt id="arg-diameter">diameter<a class="anchor" aria-label="anchor" href="#arg-diameter"></a></dt>
+<dd><p>Diameter of the pipe in meters (m).</p></dd>
 
 
-<dt id="arg-q">q<a class="anchor" aria-label="anchor" href="#arg-q"></a></dt>
+<dt id="arg-flow-rate">flow_rate<a class="anchor" aria-label="anchor" href="#arg-flow-rate"></a></dt>
 <dd><p>Flow rate value.</p></dd>
 
 
-<dt id="arg-q-unit">q_unit<a class="anchor" aria-label="anchor" href="#arg-q-unit"></a></dt>
+<dt id="arg-flow-unit">flow_unit<a class="anchor" aria-label="anchor" href="#arg-flow-unit"></a></dt>
 <dd><p>Flow measurement unit. Options are "m3/s", "l/h", "m3/h", or "l/s". Default is "m3/s".</p></dd>
 
 
-<dt id="arg-l">l<a class="anchor" aria-label="anchor" href="#arg-l"></a></dt>
+<dt id="arg-length">length<a class="anchor" aria-label="anchor" href="#arg-length"></a></dt>
 <dd><p>Length of the pipe in meters (m).</p></dd>
 
 
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
 <dd><p>The method used to calculate head loss. Options are <code>"darcy_colebrook"</code> (default),
-<code>"hazen_williams"</code>, <code>"flamant"</code>, <code>"swamee_jain"</code>, <code>"blasius"</code>, and <code>"haaland"</code>.</p></dd>
+<code>"hazen_williams"</code>, <code>"flamant"</code>, <code>"swamee_jain"</code>, <code>"blasius"</code>, <code>"haaland"</code>,
+<code>"churchill"</code>, and <code>"chen"</code>.</p></dd>
 
 
-<dt id="arg-rc">rc<a class="anchor" aria-label="anchor" href="#arg-rc"></a></dt>
+<dt id="arg-roughness">roughness<a class="anchor" aria-label="anchor" href="#arg-roughness"></a></dt>
 <dd><p>Absolute roughness of the pipe in meters (m). Used for Darcy-Weisbach methods.
 Default is <code>1.5e-6</code> (typical for PVC and Polyethylene).</p></dd>
 
 
-<dt id="arg-hw-c">hw_c<a class="anchor" aria-label="anchor" href="#arg-hw-c"></a></dt>
+<dt id="arg-hazen-coef">hazen_coef<a class="anchor" aria-label="anchor" href="#arg-hazen-coef"></a></dt>
 <dd><p>Hazen-Williams roughness coefficient (dimensionless). Default is 140 (smooth plastic pipes).</p></dd>
 
 
-<dt id="arg-flamant-b">flamant_b<a class="anchor" aria-label="anchor" href="#arg-flamant-b"></a></dt>
+<dt id="arg-flamant-coef">flamant_coef<a class="anchor" aria-label="anchor" href="#arg-flamant-coef"></a></dt>
 <dd><p>Flamant roughness coefficient. Default is 0.000135 (plastic pipes).</p></dd>
 
 
-<dt id="arg-v">v<a class="anchor" aria-label="anchor" href="#arg-v"></a></dt>
+<dt id="arg-viscosity">viscosity<a class="anchor" aria-label="anchor" href="#arg-viscosity"></a></dt>
 <dd><p>Kinematic viscosity of the fluid in square meters per second (m^2/s).
 Default is the value for water at 20 degrees Celsius (<code>1.01e-6</code>).</p></dd>
 
 
-<dt id="arg-g">g<a class="anchor" aria-label="anchor" href="#arg-g"></a></dt>
+<dt id="arg-gravity">gravity<a class="anchor" aria-label="anchor" href="#arg-gravity"></a></dt>
 <dd><p>Gravitational acceleration in m/s^2. Default is 9.81.</p></dd>
 
 
-<dt id="arg-x-">x1<a class="anchor" aria-label="anchor" href="#arg-x-"></a></dt>
+<dt id="arg-initial-guess">initial_guess<a class="anchor" aria-label="anchor" href="#arg-initial-guess"></a></dt>
 <dd><p>Initial parameter for the Newton-Raphson method (Colebrook). Default is 0.06.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A list containing:</p><ul><li><p><code>hf</code>: Head loss in meters (m).</p></li>
-<li><p><code>method</code>: The calculation method used.</p></li>
-<li><p><code>regime</code>: Flow regime (only returned for Darcy-Weisbach methods).</p></li>
-<li><p><code>f</code>: Darcy friction factor (only returned for Darcy-Weisbach methods).</p></li>
-</ul></div>
+    <p>A numeric value representing the friction head loss in meters (m).</p>
+    </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p><strong>Reference values for Absolute Roughness (rc) in meters:</strong></p><ul><li><p>PVC and Polyethylene (PE): <code>1.5e-6</code> to <code>7.0e-6</code></p></li>
+    <p><strong>Reference values for Absolute Roughness in meters:</strong></p><ul><li><p>PVC and Polyethylene (PE): <code>1.5e-6</code> to <code>7.0e-6</code></p></li>
 <li><p>Aluminum (with couplers): <code>1.5e-4</code> to <code>2.0e-4</code></p></li>
 <li><p>Galvanized Steel: <code>1.5e-4</code></p></li>
 <li><p>Cast Iron (new): <code>2.6e-4</code></p></li>
+</ul></div>
+    <div class="section level2">
+    <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
+
+<ul><li><p>Blasius, H. (1913). Das Ähnlichkeitsgesetz bei Reibungsvorgängen in Flüssigkeiten. <em>Forschungsheft</em>, 131, 1-40.</p></li>
+<li><p>Bernardo, S., Soares, A. A., &amp; Mantovani, E. C. (2019). <em>Manual de Irrigação</em> (9th ed.). Editora UFV.</p></li>
+<li><p>Chen, N. H. (1979). An explicit equation for friction factor in pipe. <em>Industrial &amp; Engineering Chemistry Fundamentals</em>, 18(3), 296-297.</p></li>
+<li><p>Churchill, S. W. (1977). Friction-factor equation spans all fluid-flow regimes. <em>Chemical Engineering</em>, 84(24), 91-92.</p></li>
+<li><p>Colebrook, C. F. (1939). Turbulent flow in pipes... <em>Journal of the Institution of Civil Engineers</em>, 11(4), 133-156.</p></li>
+<li><p>Dunlop, E. J. (1991). <em>Wallingford software: The hydraulic friction of pipes</em>. Report SR 281.</p></li>
+<li><p>Haaland, S. E. (1983). Simple and explicit formulas for the friction factor... <em>Journal of Fluids Engineering</em>, 105(1), 89-90.</p></li>
+<li><p>Swamee, P. K., &amp; Jain, A. K. (1976). Explicit equations for pipe-flow problems. <em>Journal of the Hydraulics Division</em>, 102(5), 657-664.</p></li>
+<li><p>Williams, G. S., &amp; Hazen, A. (1905). <em>Hydraulic tables</em>. John Wiley &amp; Sons.</p></li>
 </ul></div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Darcy-Weisbach with Colebrook-White (default)</span></span></span>
-<span class="r-in"><span><span class="fu">calc_head_loss</span><span class="op">(</span>d <span class="op">=</span> <span class="fl">50e-3</span>, q <span class="op">=</span> <span class="fl">10</span>, q_unit <span class="op">=</span> <span class="st">"m3/h"</span>, l <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">calc_head_loss</span><span class="op">(</span>diameter <span class="op">=</span> <span class="fl">0.05</span>, flow_rate <span class="op">=</span> <span class="fl">10</span>, flow_unit <span class="op">=</span> <span class="st">"m3/h"</span>, length <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 3.985144</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Hazen-Williams for a PVC pipe</span></span></span>
-<span class="r-in"><span><span class="fu">calc_head_loss</span><span class="op">(</span>d <span class="op">=</span> <span class="fl">50e-3</span>, q <span class="op">=</span> <span class="fl">10</span>, q_unit <span class="op">=</span> <span class="st">"m3/h"</span>, l <span class="op">=</span> <span class="fl">100</span>, method <span class="op">=</span> <span class="st">"hazen_williams"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">calc_head_loss</span><span class="op">(</span>diameter <span class="op">=</span> <span class="fl">0.05</span>, flow_rate <span class="op">=</span> <span class="fl">10</span>, flow_unit <span class="op">=</span> <span class="st">"m3/h"</span>, length <span class="op">=</span> <span class="fl">100</span>,</span></span>
+<span class="r-in"><span>method <span class="op">=</span> <span class="st">"hazen_williams"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 4.521465</span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Explicit Swamee-Jain approximation</span></span></span>
-<span class="r-in"><span><span class="fu">calc_head_loss</span><span class="op">(</span>d <span class="op">=</span> <span class="fl">50e-3</span>, q <span class="op">=</span> <span class="fl">10</span>, q_unit <span class="op">=</span> <span class="st">"m3/h"</span>, l <span class="op">=</span> <span class="fl">100</span>, method <span class="op">=</span> <span class="st">"swamee_jain"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 3.961843</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

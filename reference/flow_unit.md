@@ -6,19 +6,19 @@ Helper function to convert flow rates between different units.
 
 ``` r
 flow_unit(
-  q,
-  q_unit = c("m3/s", "l/s", "m3/h", "l/h"),
+  flow_rate,
+  flow_unit = c("m3/s", "l/h", "m3/h", "l/s"),
   operator = c("div", "mult")
 )
 ```
 
 ## Arguments
 
-- q:
+- flow_rate:
 
   Flow rate value.
 
-- q_unit:
+- flow_unit:
 
   Flow measurement unit. Options are "m3/s", "l/h", "m3/h", or "l/s".
   Default is "m3/s".

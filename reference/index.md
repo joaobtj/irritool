@@ -2,6 +2,9 @@
 
 ## All functions
 
+- [`calc_backstep()`](https://joaobtj.github.io/irritool/reference/calc_backstep.md)
+  : Calculate pressure and flow profile along a lateral line (Backstep
+  procedure)
 - [`calc_head_loss()`](https://joaobtj.github.io/irritool/reference/calc_head_loss.md)
   : Calculate head loss in pipes by different methods
 - [`calc_kc_curve()`](https://joaobtj.github.io/irritool/reference/calc_kc_curve.md)
