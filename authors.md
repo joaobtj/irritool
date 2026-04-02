@@ -2,7 +2,8 @@
 
 ## Authors
 
-- **Joao Batista Tolentino Jr**. Author, maintainer.
+- **Joao Batista Tolentino Jr**. Author, maintainer.  
+  0000-0003-1303-4202
 
 ## Citation
 
