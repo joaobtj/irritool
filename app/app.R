@@ -1,8 +1,11 @@
-#
+# Configura os repositórios (funciona tanto no seu PC quanto no WebAssembly)
+options(repos = c(
+  meu_universo = "https://joaobtj.r-universe.dev",
+  CRAN = "https://cloud.r-project.org"
+))
+library(irritool) # Remove the comment tag when running inside the loaded package environment
 library(shiny)
-# library(irritool) # Remove the comment tag when running inside the loaded package environment
 
-# 1. User Interface (UI)
 ui <- fluidPage(
 
   # Set the title of the application

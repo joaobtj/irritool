@@ -7,22 +7,22 @@ test_that("calc_head_loss retorna valores corretos para diferentes métodos", {
   l_test <- 100
 
   # 1. Colebrook-White (Default)
-  res_cb <- calc_head_loss(d = d_test, q = q_test, q_unit = q_unit_test, l = l_test)
+  res_cb <- calc_head_loss(diameter = d_test, flow_rate = q_test, flow_unit = q_unit_test, length = l_test)
   expect_equal(res_cb, 3.985144, tolerance = 1e-4)
 
   # 2. Hazen-Williams
-  res_hw <- calc_head_loss(d = d_test, q = q_test, q_unit = q_unit_test, l = l_test, method = "hazen_williams")
+  res_hw <- calc_head_loss(diameter = d_test, flow_rate = q_test, flow_unit = q_unit_test, length = l_test, method = "hazen_williams")
   expect_equal(res_hw, 4.521465, tolerance = 1e-4)
 
   # 3. Swamee-Jain
-  res_sj <- calc_head_loss(d = d_test, q = q_test, q_unit = q_unit_test, l = l_test, method = "swamee_jain")
+  res_sj <- calc_head_loss(diameter = d_test, flow_rate = q_test, flow_unit = q_unit_test, length = l_test, method = "swamee_jain")
   expect_equal(res_sj, 3.961843, tolerance = 1e-4)
 
   # 4. Blasius
-  res_bl <- calc_head_loss(d = d_test, q = q_test, q_unit = q_unit_test, l = l_test, method = "blasius")
+  res_bl <- calc_head_loss(diameter = d_test, flow_rate = q_test, flow_unit = q_unit_test, length = l_test, method = "blasius")
   expect_equal(res_bl, 3.968018, tolerance = 1e-4)
 
   # 5. Haaland
-  res_ha <- calc_head_loss(d = d_test, q = q_test, q_unit = q_unit_test, l = l_test, method = "haaland")
+  res_ha <- calc_head_loss(diameter = d_test, flow_rate = q_test, flow_unit = q_unit_test, length = l_test, method = "haaland")
   expect_equal(res_ha, 3.941947, tolerance = 1e-4)
 })
