@@ -10,6 +10,7 @@ navbar:
       - reference
       - articles
     right:
+      - calculadora
       - github
   components:
     articles:
@@ -22,3 +23,7 @@ navbar:
         - text: "🇺🇸 In English"
         - text: "Daily Soil Water Balance Simulation"
           href: articles/water-balance.html
+    calculadora:
+      text: "Calculadora de Perda de Carga"
+      href: calculadora/index.html
+      icon: fa-caclulator

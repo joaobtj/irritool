@@ -34,5 +34,61 @@ devtools::install_github("joaobtj/irritool")
 
 Detailed examples, including the complete workflow for calculating crop water requirements and simulating the daily soil water balance, are available in the package vignettes.
 
+<<<<<<< HEAD
 If you are using the package website, you can read the full tutorials in the Articles section:
 https://joaobtj.github.io/irritool/
+=======
+## Example Usage
+
+Below is a basic workflow showing how the package functions integrate to simulate a crop cycle.
+
+```{r example, warning=FALSE, message=FALSE}
+library(irritool)
+
+# 1. Obtain climate data for a coordinate (requires local NetCDF files)
+# As this is a reproducible example, we leave the extraction commented out:
+# climate_data <- extract_brdwgd_point(
+#   target_longitude = -50.59,
+#   target_latitude = -27.28,
+#   weather_variables = c("pr", "ETo"),
+#   nc_files_directory = "path/to/files"
+# )
+
+# For this example, we will use mock climate data:
+cycle_days <- 65
+set.seed(123)
+rain_data <- sample(c(rep(0, 60), runif(5, 5, 25)))
+eto_data <- runif(cycle_days, 3, 5)
+
+# 2. Generate the Kc curve for the crop (e.g., Lettuce)
+lettuce_kc <- calc_kc_curve(
+  kc_points = c(0.7, 1.0, 0.95),
+  stage_lengths = c(15, 20, 20, 10),
+  crop = "Lettuce"
+)
+
+# View the generated plot
+print(lettuce_kc$kc_plot)
+```
+
+```{r example_balance}
+# 3. Simulate the soil water balance
+water_balance <- calc_water_balance(
+  et0 = eto_data,
+  rainfall = rain_data,
+  daily_kc_values = lettuce_kc$kc_serie, # Consuming the output from the previous function
+  root_depth = 300,
+  theta_fc = 0.30,
+  theta_wp = 0.15,
+  depletion_factor = 0.55,
+  irrigation_rule = "threshold"
+)
+
+# View the first few days of the soil water balance
+head(water_balance$water_balance_data)
+
+# View the summary depths (totals)
+print(water_balance$summary_depths)
+```
+
+>>>>>>> bb4199070b43fa16aa226864cc6e4f656aeb0053
