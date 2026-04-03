@@ -89,7 +89,3 @@ head(water_balance$water_balance_data)
 print(water_balance$summary_depths)
 ```
 
-## References
-
-* Allen, R. G., Pereira, L. S., Raes, D., & Smith, M. (1998). *Crop evapotranspiration - Guidelines for computing crop water requirements*. FAO Irrigation and drainage paper 56.
-* Xavier, A. C., King, C. W., & Scanlon, B. R. (2016). Daily gridded meteorological variables in Brazil (1980–2013). *International Journal of Climatology*.
