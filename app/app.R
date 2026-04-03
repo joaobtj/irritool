@@ -1,8 +1,9 @@
-# Configura os repositórios (funciona tanto no seu PC quanto no WebAssembly)
-options(repos = c(
-  meu_universo = "https://joaobtj.r-universe.dev",
-  CRAN = "https://cloud.r-project.org"
-))
+# 1. O "Truque": Instala o irritool apenas se estiver rodando no navegador (WebAssembly)
+if (Sys.info()[["sysname"]] == "Emscripten") {
+  webr::install("irritool", repos = "https://joaobtj.r-universe.dev")
+}
+
+
 library(irritool) # Remove the comment tag when running inside the loaded package environment
 library(shiny)
 
