@@ -46,6 +46,7 @@ jobs:
           
           # 2. Copia APENAS os scripts matemáticos do pacote para o aplicativo
           file.copy("R/calc_head_loss.R", "app/R/calc_head_loss.R", overwrite = TRUE)
+          file.copy("R/flow_unit.R", "app/R/flow_unit.R", overwrite = TRUE)
           
           # Se no futuro quiser a calculadora de linha lateral, basta adicionar:
           # file.copy("R/calc_backstep.R", "app/R/calc_backstep.R", overwrite = TRUE)
