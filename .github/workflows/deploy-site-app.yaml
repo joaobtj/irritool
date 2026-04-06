@@ -39,9 +39,21 @@ jobs:
         shell: Rscript {0}
 
       - name: 2. Construir o aplicativo Shiny (WebAssembly)
-        # O Shinylive pega a pasta "app" e joga o resultado dentro da pasta "docs/calculadora"
-        run: shinylive::export(appdir = "app", destdir = "docs/calculadora")
+        run: |
+          
+          # 1. Cria a pasta R dentro do aplicativo
+          dir.create("app/R", showWarnings = FALSE)
+          
+          # 2. Copia APENAS os scripts matemáticos do pacote para o aplicativo
+          file.copy("R/calc_head_loss.R", "app/R/calc_head_loss.R", overwrite = TRUE)
+          
+          # Se no futuro quiser a calculadora de linha lateral, basta adicionar:
+          # file.copy("R/calc_backstep.R", "app/R/calc_backstep.R", overwrite = TRUE)
+          
+          # 3. Compila o aplicativo para WebAssembly
+          shinylive::export(appdir = "app", destdir = "docs/calculadora")
         shell: Rscript {0}
+        
 
       - name: Fazer upload dos artefatos estáticos
         uses: actions/upload-pages-artifact@v3
