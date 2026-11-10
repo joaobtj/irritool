@@ -1,0 +1,19 @@
+Package: irritool
+Title: Practical Tools for Irrigation and Water Management in Agriculture
+Version: 0.0.0.9000
+Authors@R: 
+    person("Joao Batista", "Tolentino Jr.",
+           email = "joao.tolentino@ufsc.br",
+           role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0003-1303-4202",
+                       affiliation = "UFSC - Campus Curitibanos"))
+Description: Functions and workflows for irrigation engineering, water balance, 
+    crop water requirements, and hydraulics calculations.
+License: MIT + file LICENSE
+URL: https://github.com/joaobtj/irritool
+BugReports: https://github.com/joaobtj/irritool/issues
+Depends: 
+    R (>= 4.1)
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
