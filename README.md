@@ -1,0 +1,29 @@
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+# irritool
+
+<!-- badges: start -->
+
+[![R-CMD-check](https://github.com/joaobtj/irritool/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/joaobtj/irritool/actions/workflows/R-CMD-check.yaml)
+
+<!-- badges: end -->
+
+The goal of `irritool` is to provide practical tools and workflows for
+irrigation engineering, crop water requirements, soil water balance, and
+hydraulic calculations.
+
+## Installation
+
+You can install the development version of `irritool` from
+[GitHub](https://github.com/joaobtj/irritool) with:
+
+``` r
+# install.packages("pak")
+pak::pak("joaobtj/irritool")
+```
+
+## Overview
+
+The package is being redesigned to focus on irrigation scheduling and
+hydraulics.
