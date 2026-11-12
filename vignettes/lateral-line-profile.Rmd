@@ -1,0 +1,112 @@
+---
+title: "Pressure and Flow Profile Along Irrigation Lateral Lines"
+author: "Joao Batista Tolentino Jr."
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Pressure and Flow Profile Along Irrigation Lateral Lines}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 4.5,
+  dpi = 120
+)
+```
+
+## Overview
+
+In pressurized micro-irrigation systems (drip and micro-sprinkler), spatial pressure variation along a lateral pipe directly governs water application uniformity. Because discharge decreases stepwise at each emitter outlet, friction head loss along the lateral is non-linear.
+
+`calc_backstep()` implements the **backstep numerical procedure**: starting from a known boundary pressure head at the distal emitter, it steps upstream segment by segment toward the lateral inlet, computing Darcy-Weisbach friction losses via `hf::calc_head_loss_darcy()`.
+
+```{r load-packages}
+library(irritool)
+library(ggplot2)
+```
+
+---
+
+## 1. Level Lateral Line (`slope = 0`)
+
+Consider a polyethylene drip lateral with internal diameter $D = 0.012\text{ m}$ ($12\text{ mm}$), absolute roughness $\varepsilon = 1.5 \times 10^{-6}\text{ m}$, and $50$ emitters spaced at $0.30\text{ m}$ intervals.
+
+Emitter discharge follows $q = k \cdot H^x$ with discharge coefficient $k = 8.84 \times 10^{-7}\text{ m}^3\,\text{s}^{-1}\,\text{mca}^{-x}$ and exponent $x = 0.50$. Assuming a target distal pressure head of $10\text{ mca}$:
+
+```{r flat-lateral}
+level_profile <- calc_backstep(
+  end_pressure = 10,
+  diameter = 0.012,
+  spacing = 0.30,
+  n_emitters = 50,
+  slope = 0,
+  emitter_coef = 8.84e-7,
+  emitter_exp = 0.50,
+  roughness = 1.5e-6
+)
+
+head(level_profile)
+tail(level_profile)
+```
+
+Inlet operating pressure head and total lateral inlet flow rate are retrieved from the first row (`emitter == 1`):
+
+```{r inlet-summary}
+# Required inlet pressure head (mca)
+level_profile$pressure_head[1]
+
+# Total inlet flow rate (m3/s)
+level_profile$section_flow[1]
+```
+
+---
+
+## 2. Effect of Terrain Slope (`slope`)
+
+The `slope` parameter specifies elevation change per unit length ($\text{m m}^{-1}$):
+* **Positive values** (`slope > 0`) represent uphill flow (elevation gain toward the distal end).
+* **Negative values** (`slope < 0`) represent downhill flow (elevation drop toward the distal end).
+
+```{r slope-comparison}
+uphill_profile <- calc_backstep(
+  end_pressure = 10,
+  diameter = 0.012,
+  spacing = 0.30,
+  n_emitters = 50,
+  slope = 0.02,
+  emitter_coef = 8.84e-7,
+  emitter_exp = 0.50,
+  roughness = 1.5e-6
+)
+
+downhill_profile <- calc_backstep(
+  end_pressure = 10,
+  diameter = 0.012,
+  spacing = 0.30,
+  n_emitters = 50,
+  slope = -0.02,
+  emitter_coef = 8.84e-7,
+  emitter_exp = 0.50,
+  roughness = 1.5e-6
+)
+
+comparison_df <- rbind(
+  cbind(level_profile, scenario = "Level (0%)"),
+  cbind(uphill_profile, scenario = "Uphill (+2%)"),
+  cbind(downhill_profile, scenario = "Downhill (-2%)")
+)
+
+ggplot(comparison_df, aes(x = emitter, y = pressure_head, color = scenario)) +
+  geom_line(linewidth = 1) +
+  labs(
+    title = "Pressure Head Profile Along Lateral Line",
+    x = "Emitter Index (1 = Lateral Inlet)",
+    y = "Pressure Head (mca)",
+    color = "Slope Scenario"
+  ) +
+  theme_classic()
+```
