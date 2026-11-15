@@ -27,3 +27,10 @@ pak::pak("joaobtj/irritool")
 
 The package is being redesigned to focus on irrigation scheduling and
 hydraulics.
+
+## Documentation
+
+For detailed function references, mathematical background, and tutorials
+(in English and Portuguese), visit the package website:
+
+👉 **<https://joaobtj.github.io/irritool/>**

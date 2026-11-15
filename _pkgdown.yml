@@ -1,0 +1,19 @@
+url: https://joaobtj.github.io/irritool/
+template:
+  bootstrap: 5
+
+reference:
+  - title: "Irrigation"
+    contents:
+      - calc_backstep
+      - calc_kc_curve
+      - calc_water_balance
+
+articles:
+  - title: "Tutorials (English)"
+    contents:
+      - lateral-line-profile
+  - title: "Tutoriais (Português)"
+    contents:
+      - balanco-hidrico
+      - perfil-linha-lateral

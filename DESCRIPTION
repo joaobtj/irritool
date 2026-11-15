@@ -10,7 +10,7 @@ Authors@R:
 Description: Functions and workflows for irrigation engineering, water balance, 
     crop water requirements, and hydraulics calculations.
 License: MIT + file LICENSE
-URL: https://github.com/joaobtj/irritool
+URL: https://github.com/joaobtj/irritool, https://joaobtj.github.io/irritool/
 BugReports: https://github.com/joaobtj/irritool/issues
 Depends: 
     R (>= 4.1)
