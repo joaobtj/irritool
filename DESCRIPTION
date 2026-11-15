@@ -23,8 +23,11 @@ Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Imports: 
-    ggplot2,
+    hf (>= 0.0.0.9000),
     rlang,
-    scales,
-    tibble
+    tibble,
+    ggplot2,
+    scales
+Remotes: 
+    joaobtj/hf
 VignetteBuilder: knitr
