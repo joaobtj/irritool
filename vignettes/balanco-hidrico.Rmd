@@ -1,0 +1,160 @@
+---
+title: "Curva de Kc e Balanço Hídrico Diário no Solo"
+author: "João Batista Tolentino Jr."
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Curva de Kc e Balanço Hídrico Diário no Solo}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 4.5,
+  dpi = 120
+)
+```
+
+## Introdução
+
+O dimensionamento e o manejo da irrigação dependem da estimativa precisa da demanda hídrica das culturas ao longo do seu ciclo fenológico e do monitoramento da disponibilidade de água na zona radicular. O pacote `irritool` implementa a metodologia do Boletim FAO-56 (Allen et al., 1998) por meio de duas funções integradas:
+
+1. `calc_kc_curve()`: constrói a série diária do coeficiente de cultivo ($K_c$) e gera sua visualização gráfica dividida nos quatro estádios fenológicos (inicial, desenvolvimento, intermediário e final).
+2. `calc_water_balance()`: simula o balanço hídrico diário na zona das raízes, calculando o esgotamento de água no solo, o coeficiente de estresse hídrico ($K_s$), a evapotranspiração real da cultura ($ET_c$), o excedente hídrico (percolação profunda/escoamento) e as lâminas de irrigação necessárias sob critérios de turno de rega fixo ou variável.
+
+```{r load-packages}
+library(irritool)
+```
+
+---
+
+## 1. Construção da Curva de Coeficiente de Cultivo ($K_c$)
+
+De acordo com a metodologia FAO-56, a curva de $K_c$ é parametrizada por três valores de referência ($K_{c\text{ ini}}$, $K_{c\text{ mid}}$ e $K_{c\text{ end}}$) e pelas durações, em dias, de cada estádio fenológico ($L_{\text{ini}}$, $L_{\text{dev}}$, $L_{\text{mid}}$ e $L_{\text{late}}$).
+
+Como exemplo prático, considere o cultivo da alface (*Lactuca sativa*) com ciclo total de 65 dias, distribuído em 15, 20, 20 e 10 dias para os respectivos estádios, e coeficientes $K_{c\text{ ini}} = 0,70$, $K_{c\text{ mid}} = 1,05$ e $K_{c\text{ end}} = 0,95$:
+
+```{r kc-curve-example}
+kc_alface <- calc_kc_curve(
+  kc_points = c(0.70, 1.05, 0.95),
+  stage_lengths = c(15, 20, 20, 10),
+  crop = "Alface"
+)
+
+# Visualizar os primeiros registros da série diária
+head(kc_alface$kc_data)
+```
+
+O objeto retornado contém o vetor numérico (`$kc_serie`), o tibble estruturado (`$kc_data`) e o gráfico em `ggplot2` (`$kc_plot`):
+
+```{r plot-kc}
+kc_alface$kc_plot
+```
+
+---
+
+## 2. Simulação do Balanço Hídrico Diário
+
+A série diária `$kc_serie` obtida anteriormente alimenta diretamente a função `calc_water_balance()`. Para ilustrar a simulação ao longo dos 65 dias do ciclo, geramos séries sintéticas de evapotranspiração de referência ($ET_0$, em $\text{mm dia}^{-1}$) e precipitação pluvial ($\text{mm dia}^{-1}$):
+
+```{r weather-simulation}
+set.seed(42)
+n_dias <- length(kc_alface$kc_serie)
+
+et0_diaria <- round(runif(n_dias, min = 2.5, max = 5.2), 1)
+chuva_diaria <- rep(0, n_dias)
+dias_chuva <- sample(seq_len(n_dias), size = 9)
+chuva_diaria[dias_chuva] <- round(runif(9, min = 8, max = 38), 1)
+```
+
+### Cenário A: Turno de Rega Variável (`irrigation_rule = "threshold"`)
+
+Neste critério, a irrigação é acionada automaticamente sempre que o esgotamento de água no solo ao final do dia ultrapassa a Água Facilmente Disponível ($AFD$ ou $RAW$), repondo a umidade até a capacidade de campo ($\theta_{cc}$).
+
+Parâmetros físico-hídricos adotados para o solo e cultura:
+
+* Capacidade de campo ($\theta_{cc}$): $0,32\text{ m}^3\text{ m}^{-3}$
+* Ponto de murcha permanente ($\theta_{pmp}$): $0,16\text{ m}^3\text{ m}^{-3}$
+* Profundidade efetiva do sistema radicular ($Z_r$): $300\text{ mm}$
+* Fator de disponibilidade ($p$): $0,50$
+
+```{r wb-threshold}
+bh_variavel <- calc_water_balance(
+  et0 = et0_diaria,
+  rainfall = chuva_diaria,
+  daily_kc_values = kc_alface$kc_serie,
+  root_depth = 300,
+  theta_fc = 0.32,
+  theta_wp = 0.16,
+  depletion_factor = 0.50,
+  initial_depletion = 0,
+  irrigation_rule = "threshold"
+)
+
+# Resumo das lâminas acumuladas no ciclo (mm)
+bh_variavel$summary_depths
+```
+
+A tabela detalhada do balanço diário pode ser inspecionada em `$water_balance_data`:
+
+```{r wb-table}
+head(bh_variavel$water_balance_data, 10)
+```
+
+---
+
+### Cenário B: Turno de Rega Fixo (`irrigation_rule = N`)
+
+Quando o manejo opera com frequência fixa (por exemplo, a cada 5 dias), informa-se um número inteiro positivo em `irrigation_rule`. Nesses dias predefinidos, a lâmina aplicada corresponde ao esgotamento acumulado na zona radicular; caso o esgotamento ultrapasse a $AFD$ entre duas irrigações, a função reduz proporcionalmente a evapotranspiração por meio do coeficiente $K_s < 1$:
+
+```{r wb-fixed}
+bh_fixo <- calc_water_balance(
+  et0 = et0_diaria,
+  rainfall = chuva_diaria,
+  daily_kc_values = kc_alface$kc_serie,
+  root_depth = 300,
+  theta_fc = 0.32,
+  theta_wp = 0.16,
+  depletion_factor = 0.50,
+  initial_depletion = 0,
+  irrigation_rule = 5
+)
+
+bh_fixo$summary_depths
+```
+
+---
+
+## 3. Comparação Entre Estratégias de Manejo
+
+A tabela abaixo sintetiza o desempenho hídrico das duas estratégias simuladas ao longo do ciclo:
+
+```{r comparison-table}
+resumo_manejo <- data.frame(
+  Indicador = c(
+    "Precipitação Total (mm)",
+    "Precipitação Efetiva (mm)",
+    "Excedente Hídrico / Percolação (mm)",
+    "ETc Real Acumulada (mm)",
+    "Irrigação Total Aplicada (mm)",
+    "Número de Eventos de Irrigação"
+  ),
+  Turno_Variavel = unlist(bh_variavel$summary_depths), Turno_Fixo_5d = unlist(bh_fixo$summary_depths),
+  row.names = NULL
+)
+
+knitr::kable(
+  resumo_manejo,
+  digits = 1,
+  col.names = c("Indicador Hídrico", "Turno Variável (AFD)", "Turno Fixo (5 dias)")
+)
+```
+
+---
+
+## Referências
+
+Allen, R. G., Pereira, L. S., Raes, D., & Smith, M. (1998). *Crop evapotranspiration - Guidelines for computing crop water requirements*. FAO Irrigation and drainage paper 56. Food and Agriculture Organization of the United Nations, Rome.
