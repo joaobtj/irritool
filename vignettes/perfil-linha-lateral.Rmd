@@ -1,3 +1,4 @@
+
 ---
 title: "Perfil de Pressão e Vazão em Linhas Laterais (Método Passo a Passo)"
 author: "Joao Batista Tolentino Jr."
@@ -16,26 +17,28 @@ knitr::opts_chunk$set(
   fig.height = 4.5,
   dpi = 120
 )
+
 ```
 
 ## Introdução
 
 No dimensionamento hidráulico de sistemas de irrigação localizada (gotejamento e microaspersão), a variação de pressão ao longo da linha lateral afeta diretamente a uniformidade de distribuição de água. Como a vazão escoa continuamente pelos emissores ao longo da tubulação, a perda de carga por atrito não é linear.
 
-A função `calc_backstep()` implementa o **método passo a passo** (*backstep procedure*), partindo da condição de contorno conhecida no último emissor (extremidade distal da linha) e avançando trecho a trecho em direção à derivação (início da linha), computando a perda de carga por Darcy-Weisbach via `hf::calc_head_loss_darcy()`.
+A função `calc_backstep()` implementa o **método passo a passo** (*backstep procedure*), partindo da condição de contorno conhecida no último emissor (extremidade distal da linha) e avançando trecho a trecho em direção à derivação (início da linha). É possível escolher a equação de perda de carga do pacote `hf` por meio do argumento `method` (`"darcy"`, `"flamant"` ou `"hw"`) e definir a unidade de vazão diretamente em `flow_unit` (como `"m3/s"`, `"L/s"` ou `"L/h"`).
 
 ```{r load-packages}
 library(irritool)
 library(ggplot2)
+
 ```
 
 ---
 
-## 1. Linha Lateral em Nível (`slope = 0`)
+## 1. Linha Lateral em Nível (`slope = 0`) e Unidade de Vazão (`flow_unit`)
 
 Considere uma linha lateral de polietileno com diâmetro interno $D = 12\text{ mm}$ ($0,012\text{ m}$), rugosidade absoluta $\varepsilon = 1,5 \times 10^{-6}\text{ m}$, contendo $50$ gotejadores espaçados a cada $0,30\text{ m}$ ($L = 15\text{ m}$).
 
-A relação vazão-pressão do emissor é dada por $q = k \cdot H^x$, com coeficiente $k = 8,84 \times 10^{-7}\text{ m}^3\text{ s}^{-1}\text{ mca}^{-x}$ (equivalente a $3,18\text{ L h}^{-1}$ a $1\text{ mca}$) e expoente de descarga $x = 0,50$. Deseja-se manter uma pressão mínima no final da linha igual a $10\text{ mca}$:
+A relação vazão-pressão do emissor é dada por $q = k \cdot H^x$, com coeficiente $k = 3,18\text{ L h}^{-1}\text{ mca}^{-x}$ e expoente de descarga $x = 0,50$. Informando `flow_unit = "L/h"`, não é necessário converter manualmente o coeficiente do emissor para $\text{m}^3\text{ s}^{-1}$, e as vazões retornadas (`emitter_flow` e `section_flow`) já saem em $\text{L h}^{-1}$. Deseja-se manter uma pressão mínima no final da linha igual a $10\text{ mca}$:
 
 ```{r flat-lateral}
 perfil_nivel <- calc_backstep(
@@ -44,13 +47,16 @@ perfil_nivel <- calc_backstep(
   spacing = 0.30,
   n_emitters = 50,
   slope = 0,
-  emitter_coef = 8.84e-7,
+  emitter_coef = 3.18,
   emitter_exp = 0.50,
+  method = "darcy",
+  flow_unit = "L/h",
   roughness = 1.5e-6
 )
 
 head(perfil_nivel)
 tail(perfil_nivel)
+
 ```
 
 A vazão total requerida na entrada da linha lateral (`section_flow` no emissor 1) e a pressão de serviço necessária no início da linha (`pressure_head` no emissor 1) são obtidas diretamente da primeira linha do tibble retornado:
@@ -60,7 +66,8 @@ A vazão total requerida na entrada da linha lateral (`section_flow` no emissor 
 perfil_nivel$pressure_head[1]
 
 # Vazão total na entrada da linha lateral (L/h)
-perfil_nivel$section_flow[1] * 3.6e6
+perfil_nivel$section_flow[1]
+
 ```
 
 ---
@@ -68,6 +75,7 @@ perfil_nivel$section_flow[1] * 3.6e6
 ## 2. Efeito da Declividade do Terreno (`slope`)
 
 O argumento `slope` representa a declividade em $\text{m m}^{-1}$:
+
 * Valores **positivos** (`slope > 0`) indicam terreno em aclive (subida no sentido do escoamento).
 * Valores **negativos** (`slope < 0`) indicam terreno em declive (descida no sentido do escoamento).
 
@@ -80,8 +88,9 @@ perfil_aclive <- calc_backstep(
   spacing = 0.30,
   n_emitters = 50,
   slope = 0.02,
-  emitter_coef = 8.84e-7,
+  emitter_coef = 3.18,
   emitter_exp = 0.50,
+  flow_unit = "L/h",
   roughness = 1.5e-6
 )
 
@@ -91,8 +100,9 @@ perfil_declive <- calc_backstep(
   spacing = 0.30,
   n_emitters = 50,
   slope = -0.02,
-  emitter_coef = 8.84e-7,
+  emitter_coef = 3.18,
   emitter_exp = 0.50,
+  flow_unit = "L/h",
   roughness = 1.5e-6
 )
 
@@ -111,4 +121,58 @@ ggplot(dados_comparacao, aes(x = emitter, y = pressure_head, color = cenario)) +
     color = "Topografia"
   ) +
   theme_classic()
+
 ```
+
+---
+
+## 3. Comparação entre Equações de Perda de Carga (`method`)
+
+Além de Darcy-Weisbach (`method = "darcy"`, padrão), `calc_backstep()` permite utilizar as equações empíricas de Flamant (`method = "flamant"`) e Hazen-Williams (`method = "hw"`), repassando parâmetros específicos de cada equação (como `roughness` ou `coef`) via `...`:
+
+```{r method-comparison}
+perfil_flamant <- calc_backstep(
+  end_pressure = 10,
+  diameter = 0.012,
+  spacing = 0.30,
+  n_emitters = 50,
+  slope = 0,
+  emitter_coef = 3.18,
+  emitter_exp = 0.50,
+  method = "flamant",
+  flow_unit = "L/h",
+  coef = 0.000135
+)
+
+perfil_hw <- calc_backstep(
+  end_pressure = 10,
+  diameter = 0.012,
+  spacing = 0.30,
+  n_emitters = 50,
+  slope = 0,
+  emitter_coef = 3.18,
+  emitter_exp = 0.50,
+  method = "hw",
+  flow_unit = "L/h",
+  coef = 140
+)
+
+dados_metodos <- rbind(
+  cbind(perfil_nivel, equacao = "Darcy-Weisbach"),
+  cbind(perfil_flamant, equacao = "Flamant (b = 0,000135)"),
+  cbind(perfil_hw, equacao = "Hazen-Williams (C = 140)")
+)
+
+ggplot(dados_metodos, aes(x = emitter, y = pressure_head, color = equacao)) +
+  geom_line(linewidth = 1) +
+  labs(
+    title = "Comparação de Equações de Perda de Carga na Linha Lateral",
+    x = "Índice do Emissor (1 = Início da Linha)",
+    y = "Carga de Pressão (mca)",
+    color = "Equação"
+  ) +
+  theme_classic()
+
+```
+
+

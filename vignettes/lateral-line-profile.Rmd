@@ -16,26 +16,28 @@ knitr::opts_chunk$set(
   fig.height = 4.5,
   dpi = 120
 )
+
 ```
 
 ## Overview
 
 In pressurized micro-irrigation systems (drip and micro-sprinkler), spatial pressure variation along a lateral pipe directly governs water application uniformity. Because discharge decreases stepwise at each emitter outlet, friction head loss along the lateral is non-linear.
 
-`calc_backstep()` implements the **backstep numerical procedure**: starting from a known boundary pressure head at the distal emitter, it steps upstream segment by segment toward the lateral inlet, computing Darcy-Weisbach friction losses via `hf::calc_head_loss_darcy()`.
+`calc_backstep()` implements the **backstep numerical procedure**: starting from a known boundary pressure head at the distal emitter, it steps upstream segment by segment toward the lateral inlet. You can choose the head loss equation from the `hf` package via `method` (`"darcy"`, `"flamant"`, or `"hw"`) and specify the volumetric flow rate unit directly with `flow_unit` (such as `"m3/s"`, `"L/s"`, or `"L/h"`).
 
 ```{r load-packages}
 library(irritool)
 library(ggplot2)
+
 ```
 
 ---
 
-## 1. Level Lateral Line (`slope = 0`)
+## 1. Level Lateral Line (`slope = 0`) and Flow Units (`flow_unit`)
 
 Consider a polyethylene drip lateral with internal diameter $D = 0.012\text{ m}$ ($12\text{ mm}$), absolute roughness $\varepsilon = 1.5 \times 10^{-6}\text{ m}$, and $50$ emitters spaced at $0.30\text{ m}$ intervals.
 
-Emitter discharge follows $q = k \cdot H^x$ with discharge coefficient $k = 8.84 \times 10^{-7}\text{ m}^3\,\text{s}^{-1}\,\text{mca}^{-x}$ and exponent $x = 0.50$. Assuming a target distal pressure head of $10\text{ mca}$:
+Emitter discharge follows $q = k \cdot H^x$ with discharge coefficient $k = 3.18\text{ L h}^{-1}\text{ mca}^{-x}$ and exponent $x = 0.50$. By setting `flow_unit = "L/h"`, there is no need to manually convert the emitter coefficient to $\text{m}^3\,\text{s}^{-1}$, and both `emitter_flow` and `section_flow` are returned directly in $\text{L h}^{-1}$. Assuming a target distal pressure head of $10\text{ mca}$:
 
 ```{r flat-lateral}
 level_profile <- calc_backstep(
@@ -44,13 +46,16 @@ level_profile <- calc_backstep(
   spacing = 0.30,
   n_emitters = 50,
   slope = 0,
-  emitter_coef = 8.84e-7,
+  emitter_coef = 3.18,
   emitter_exp = 0.50,
+  method = "darcy",
+  flow_unit = "L/h",
   roughness = 1.5e-6
 )
 
 head(level_profile)
 tail(level_profile)
+
 ```
 
 Inlet operating pressure head and total lateral inlet flow rate are retrieved from the first row (`emitter == 1`):
@@ -59,8 +64,9 @@ Inlet operating pressure head and total lateral inlet flow rate are retrieved fr
 # Required inlet pressure head (mca)
 level_profile$pressure_head[1]
 
-# Total inlet flow rate (m3/s)
+# Total inlet flow rate (L/h)
 level_profile$section_flow[1]
+
 ```
 
 ---
@@ -68,6 +74,7 @@ level_profile$section_flow[1]
 ## 2. Effect of Terrain Slope (`slope`)
 
 The `slope` parameter specifies elevation change per unit length ($\text{m m}^{-1}$):
+
 * **Positive values** (`slope > 0`) represent uphill flow (elevation gain toward the distal end).
 * **Negative values** (`slope < 0`) represent downhill flow (elevation drop toward the distal end).
 
@@ -78,8 +85,9 @@ uphill_profile <- calc_backstep(
   spacing = 0.30,
   n_emitters = 50,
   slope = 0.02,
-  emitter_coef = 8.84e-7,
+  emitter_coef = 3.18,
   emitter_exp = 0.50,
+  flow_unit = "L/h",
   roughness = 1.5e-6
 )
 
@@ -89,8 +97,9 @@ downhill_profile <- calc_backstep(
   spacing = 0.30,
   n_emitters = 50,
   slope = -0.02,
-  emitter_coef = 8.84e-7,
+  emitter_coef = 3.18,
   emitter_exp = 0.50,
+  flow_unit = "L/h",
   roughness = 1.5e-6
 )
 
@@ -109,4 +118,58 @@ ggplot(comparison_df, aes(x = emitter, y = pressure_head, color = scenario)) +
     color = "Slope Scenario"
   ) +
   theme_classic()
+
 ```
+
+---
+
+## 3. Comparing Head Loss Equations (`method`)
+
+In addition to Darcy-Weisbach (`method = "darcy"`, default), `calc_backstep()` supports the Flamant (`method = "flamant"`) and Hazen-Williams (`method = "hw"`) empirical equations, forwarding equation-specific parameters (such as `roughness` or `coef`) through `...`:
+
+```{r method-comparison}
+flamant_profile <- calc_backstep(
+  end_pressure = 10,
+  diameter = 0.012,
+  spacing = 0.30,
+  n_emitters = 50,
+  slope = 0,
+  emitter_coef = 3.18,
+  emitter_exp = 0.50,
+  method = "flamant",
+  flow_unit = "L/h",
+  coef = 0.000135
+)
+
+hw_profile <- calc_backstep(
+  end_pressure = 10,
+  diameter = 0.012,
+  spacing = 0.30,
+  n_emitters = 50,
+  slope = 0,
+  emitter_coef = 3.18,
+  emitter_exp = 0.50,
+  method = "hw",
+  flow_unit = "L/h",
+  coef = 140
+)
+
+methods_df <- rbind(
+  cbind(level_profile, method = "Darcy-Weisbach"),
+  cbind(flamant_profile, method = "Flamant (b = 0.000135)"),
+  cbind(hw_profile, method = "Hazen-Williams (C = 140)")
+)
+
+ggplot(methods_df, aes(x = emitter, y = pressure_head, color = method)) +
+  geom_line(linewidth = 1) +
+  labs(
+    title = "Comparison of Head Loss Equations Along Lateral Line",
+    x = "Emitter Index (1 = Lateral Inlet)",
+    y = "Pressure Head (mca)",
+    color = "Equation"
+  ) +
+  theme_classic()
+
+```
+
+
