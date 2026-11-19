@@ -12,6 +12,8 @@ calc_backstep(
   slope = 0,
   emitter_coef,
   emitter_exp,
+  method = c("darcy", "flamant", "hw"),
+  flow_unit = "m3/s",
   ...
 )
 }
@@ -28,32 +30,48 @@ calc_backstep(
 \item{slope}{Numeric. Elevation change (slope) per meter of pipe (m/m). Positive
 values indicate uphill slope, negative values indicate downhill slope. Defaults to \code{0}.}
 
-\item{emitter_coef}{Numeric. Emitter discharge coefficient in SI units
-(\eqn{\text{m}^3\,\text{s}^{-1}\,\text{mca}^{-x}}).}
+\item{emitter_coef}{Numeric. Emitter discharge coefficient in units consistent with
+\code{flow_unit} (e.g., \eqn{\text{m}^3\,\text{s}^{-1}\,\text{mca}^{-x}} when
+\code{flow_unit = "m3/s"}, or \eqn{\text{L}\,\text{h}^{-1}\,\text{mca}^{-x}} when
+\code{flow_unit = "L/h"}).}
 
 \item{emitter_exp}{Numeric. Emitter discharge exponent (between 0 and 1).}
 
-\item{...}{Additional arguments passed to \code{\link[hf:calc_head_loss_darcy]{hf::calc_head_loss_darcy()}} (such as
-\code{roughness}, \code{friction_factor}, or \code{viscosity}). Either \code{roughness} or
-\code{friction_factor} must be supplied.}
+\item{method}{Character. Head loss equation to use: \code{"darcy"} for Darcy-Weisbach
+(default), \code{"flamant"} for Flamant, or \code{"hw"} for Hazen-Williams.}
+
+\item{flow_unit}{Character. Unit of the volumetric flow rate used for \code{emitter_coef}
+and returned in \code{emitter_flow} and \code{section_flow}. Passed directly to the chosen
+\code{hf} head loss function. Options include \code{"m3/s"} (default), \code{"m3/min"}, \code{"m3/h"},
+\code{"m3/d"}, \code{"L/s"}, \code{"L/min"}, \code{"L/h"}, and \code{"L/d"}.}
+
+\item{...}{Additional arguments passed to the chosen head loss function:
+\itemize{
+\item For \code{"darcy"}: \code{roughness}, \code{friction_factor}, \code{friction_fun}, \code{viscosity}, \code{gravity}
+(either \code{roughness} or \code{friction_factor} must be supplied).
+\item For \code{"flamant"}: \code{coef} (default \code{0.000135}).
+\item For \code{"hw"}: \code{coef} (default \code{140}).
+}}
 }
 \value{
 A \code{\link[tibble:tibble]{tibble::tibble()}} containing the hydraulic profile of the lateral line:
 \itemize{
 \item \code{emitter}: Integer emitter index (\code{1} is the first emitter near the inlet, \code{n} is the last).
 \item \code{pressure_head}: Pressure head at each emitter (mca).
-\item \code{emitter_flow}: Flow rate discharged by each emitter (\eqn{\text{m}^3\,\text{s}^{-1}}).
-\item \code{section_flow}: Flow rate in the pipe section immediately upstream of the emitter (\eqn{\text{m}^3\,\text{s}^{-1}}).
+\item \code{emitter_flow}: Flow rate discharged by each emitter (in \code{flow_unit}).
+\item \code{section_flow}: Flow rate in the pipe section immediately upstream of the emitter (in \code{flow_unit}).
 \item \code{head_loss}: Friction head loss in the pipe section upstream of the emitter (m).
 }
 }
 \description{
 Calculates the pressure head and flow rate profile along an irrigation lateral
 line, starting from the distal end (last emitter) and stepping backwards to
-the inlet using the Darcy-Weisbach equation via \code{\link[hf:calc_head_loss_darcy]{hf::calc_head_loss_darcy()}}.
+the inlet using one of the head loss equations from the \code{hf} package:
+Darcy-Weisbach (\code{\link[hf:calc_head_loss_darcy]{hf::calc_head_loss_darcy()}}), Flamant
+(\code{\link[hf:calc_head_loss_flamant]{hf::calc_head_loss_flamant()}}), or Hazen-Williams (\code{\link[hf:calc_head_loss_hw]{hf::calc_head_loss_hw()}}).
 }
 \examples{
-# Lateral line with 5 emitters, 1 m spacing, and smooth PE roughness (1.5e-6 m)
+# 1. Darcy-Weisbach (default) with flow in m3/s
 calc_backstep(
   end_pressure = 10,
   diameter = 0.012,
@@ -65,15 +83,31 @@ calc_backstep(
   roughness = 1.5e-6
 )
 
-# Drip lateral line with 12 emitters and 0.3 m spacing
+# 2. Drip lateral line using Flamant and flow in L/h
 calc_backstep(
   end_pressure = 10,
   diameter = 0.012,
   spacing = 0.3,
   n_emitters = 12,
   slope = 0,
-  emitter_coef = 3.18 / 3.6e6,
+  emitter_coef = 3.18,
   emitter_exp = 0.50,
-  roughness = 1.5e-6
+  method = "flamant",
+  flow_unit = "L/h",
+  coef = 0.000135
+)
+
+# 3. Hazen-Williams with custom C coefficient and flow in L/s
+calc_backstep(
+  end_pressure = 15,
+  diameter = 0.025,
+  spacing = 6,
+  n_emitters = 8,
+  slope = 0.02,
+  emitter_coef = 0.05,
+  emitter_exp = 0.50,
+  method = "hw",
+  flow_unit = "L/s",
+  coef = 150
 )
 }
