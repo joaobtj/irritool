@@ -72,15 +72,19 @@ de carga por atrito não é linear.</p>
 passo a passo</strong> (<em>backstep procedure</em>), partindo da
 condição de contorno conhecida no último emissor (extremidade distal da
 linha) e avançando trecho a trecho em direção à derivação (início da
-linha), computando a perda de carga por Darcy-Weisbach via
-<code><a href="https://joaobtj.github.io/hf/reference/calc_head_loss_darcy.html" class="external-link">hf::calc_head_loss_darcy()</a></code>.</p>
+linha). É possível escolher a equação de perda de carga do pacote
+<code>hf</code> por meio do argumento <code>method</code>
+(<code>"darcy"</code>, <code>"flamant"</code> ou <code>"hw"</code>) e
+definir a unidade de vazão diretamente em <code>flow_unit</code> (como
+<code>"m3/s"</code>, <code>"L/s"</code> ou <code>"L/h"</code>).</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/joaobtj/irritool" class="external-link">irritool</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span></code></pre></div>
 <hr>
 </div>
 <div class="section level2">
-<h2 id="linha-lateral-em-nível-slope-0">1. Linha Lateral em Nível (<code>slope = 0</code>)<a class="anchor" aria-label="anchor" href="#linha-lateral-em-n%C3%ADvel-slope-0"></a>
+<h2 id="linha-lateral-em-nível-slope-0-e-unidade-de-vazão-flow_unit">1. Linha Lateral em Nível (<code>slope = 0</code>) e Unidade de
+Vazão (<code>flow_unit</code>)<a class="anchor" aria-label="anchor" href="#linha-lateral-em-n%C3%ADvel-slope-0-e-unidade-de-vaz%C3%A3o-flow_unit"></a>
 </h2>
 <p>Considere uma linha lateral de polietileno com diâmetro interno
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>D</mi><mo>=</mo><mn>12</mn><mrow><mspace width="0.333em"></mspace><mtext mathvariant="normal"> mm</mtext></mrow></mrow><annotation encoding="application/x-tex">D = 12\text{ mm}</annotation></semantics></math>
@@ -95,13 +99,15 @@ gotejadores espaçados a cada
 <p>A relação vazão-pressão do emissor é dada por
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>q</mi><mo>=</mo><mi>k</mi><mo>⋅</mo><msup><mi>H</mi><mi>x</mi></msup></mrow><annotation encoding="application/x-tex">q = k \cdot H^x</annotation></semantics></math>,
 com coeficiente
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi><mo>=</mo><mn>8</mn><mo>,</mo><mn>84</mn><mo>×</mo><msup><mn>10</mn><mrow><mi>−</mi><mn>7</mn></mrow></msup><msup><mrow><mspace width="0.333em"></mspace><mtext mathvariant="normal"> m</mtext></mrow><mn>3</mn></msup><msup><mrow><mspace width="0.333em"></mspace><mtext mathvariant="normal"> s</mtext></mrow><mrow><mi>−</mi><mn>1</mn></mrow></msup><msup><mrow><mspace width="0.333em"></mspace><mtext mathvariant="normal"> mca</mtext></mrow><mrow><mi>−</mi><mi>x</mi></mrow></msup></mrow><annotation encoding="application/x-tex">k = 8,84 \times 10^{-7}\text{ m}^3\text{ s}^{-1}\text{ mca}^{-x}</annotation></semantics></math>
-(equivalente a
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>3</mn><mo>,</mo><mn>18</mn><msup><mrow><mspace width="0.333em"></mspace><mtext mathvariant="normal"> L h</mtext></mrow><mrow><mi>−</mi><mn>1</mn></mrow></msup></mrow><annotation encoding="application/x-tex">3,18\text{ L h}^{-1}</annotation></semantics></math>
-a
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mrow><mspace width="0.333em"></mspace><mtext mathvariant="normal"> mca</mtext></mrow></mrow><annotation encoding="application/x-tex">1\text{ mca}</annotation></semantics></math>)
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi><mo>=</mo><mn>3</mn><mo>,</mo><mn>18</mn><msup><mrow><mspace width="0.333em"></mspace><mtext mathvariant="normal"> L h</mtext></mrow><mrow><mi>−</mi><mn>1</mn></mrow></msup><msup><mrow><mspace width="0.333em"></mspace><mtext mathvariant="normal"> mca</mtext></mrow><mrow><mi>−</mi><mi>x</mi></mrow></msup></mrow><annotation encoding="application/x-tex">k = 3,18\text{ L h}^{-1}\text{ mca}^{-x}</annotation></semantics></math>
 e expoente de descarga
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>x</mi><mo>=</mo><mn>0</mn><mo>,</mo><mn>50</mn></mrow><annotation encoding="application/x-tex">x = 0,50</annotation></semantics></math>.
+Informando <code>flow_unit = "L/h"</code>, não é necessário converter
+manualmente o coeficiente do emissor para
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mtext mathvariant="normal">m</mtext><mn>3</mn></msup><msup><mrow><mspace width="0.333em"></mspace><mtext mathvariant="normal"> s</mtext></mrow><mrow><mi>−</mi><mn>1</mn></mrow></msup></mrow><annotation encoding="application/x-tex">\text{m}^3\text{ s}^{-1}</annotation></semantics></math>,
+e as vazões retornadas (<code>emitter_flow</code> e
+<code>section_flow</code>) já saem em
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mtext mathvariant="normal">L h</mtext><mrow><mi>−</mi><mn>1</mn></mrow></msup><annotation encoding="application/x-tex">\text{L h}^{-1}</annotation></semantics></math>.
 Deseja-se manter uma pressão mínima no final da linha igual a
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>10</mn><mrow><mspace width="0.333em"></mspace><mtext mathvariant="normal"> mca</mtext></mrow></mrow><annotation encoding="application/x-tex">10\text{ mca}</annotation></semantics></math>:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
@@ -111,8 +117,10 @@ Deseja-se manter uma pressão mínima no final da linha igual a
 <span>  spacing <span class="op">=</span> <span class="fl">0.30</span>,</span>
 <span>  n_emitters <span class="op">=</span> <span class="fl">50</span>,</span>
 <span>  slope <span class="op">=</span> <span class="fl">0</span>,</span>
-<span>  emitter_coef <span class="op">=</span> <span class="fl">8.84e-7</span>,</span>
+<span>  emitter_coef <span class="op">=</span> <span class="fl">3.18</span>,</span>
 <span>  emitter_exp <span class="op">=</span> <span class="fl">0.50</span>,</span>
+<span>  method <span class="op">=</span> <span class="st">"darcy"</span>,</span>
+<span>  flow_unit <span class="op">=</span> <span class="st">"L/h"</span>,</span>
 <span>  roughness <span class="op">=</span> <span class="fl">1.5e-6</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -120,22 +128,22 @@ Deseja-se manter uma pressão mínima no final da linha igual a
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 5</span></span></span>
 <span><span class="co">#&gt;   emitter pressure_head emitter_flow section_flow head_loss</span></span>
 <span><span class="co">#&gt;     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>       1          11.0   0.000<span style="text-decoration: underline;">002</span>93     0.000<span style="text-decoration: underline;">142</span>    0.054<span style="text-decoration: underline;">0</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>       2          10.9   0.000<span style="text-decoration: underline;">002</span>92     0.000<span style="text-decoration: underline;">139</span>    0.052<span style="text-decoration: underline;">1</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>       3          10.9   0.000<span style="text-decoration: underline;">002</span>92     0.000<span style="text-decoration: underline;">136</span>    0.050<span style="text-decoration: underline;">1</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>       4          10.8   0.000<span style="text-decoration: underline;">002</span>91     0.000<span style="text-decoration: underline;">133</span>    0.048<span style="text-decoration: underline;">2</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>       5          10.8   0.000<span style="text-decoration: underline;">002</span>90     0.000<span style="text-decoration: underline;">130</span>    0.046<span style="text-decoration: underline;">3</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>       6          10.7   0.000<span style="text-decoration: underline;">002</span>90     0.000<span style="text-decoration: underline;">127</span>    0.044<span style="text-decoration: underline;">5</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>       1          11.0         10.5         509.    0.054<span style="text-decoration: underline;">0</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>       2          10.9         10.5         499.    0.052<span style="text-decoration: underline;">0</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>       3          10.9         10.5         488.    0.050<span style="text-decoration: underline;">1</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>       4          10.8         10.5         478.    0.048<span style="text-decoration: underline;">2</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>       5          10.8         10.4         467.    0.046<span style="text-decoration: underline;">3</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>       6          10.7         10.4         457.    0.044<span style="text-decoration: underline;">5</span></span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="va">perfil_nivel</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 5</span></span></span>
 <span><span class="co">#&gt;   emitter pressure_head emitter_flow section_flow head_loss</span></span>
 <span><span class="co">#&gt;     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>      45          10.0   0.000<span style="text-decoration: underline;">002</span>80   0.000<span style="text-decoration: underline;">016</span>8   0.000<span style="text-decoration: underline;">843</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>      46          10.0   0.000<span style="text-decoration: underline;">002</span>80   0.000<span style="text-decoration: underline;">014</span>0   0.000<span style="text-decoration: underline;">675</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>      47          10.0   0.000<span style="text-decoration: underline;">002</span>80   0.000<span style="text-decoration: underline;">011</span>2   0.000<span style="text-decoration: underline;">506</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>      48          10.0   0.000<span style="text-decoration: underline;">002</span>80   0.000<span style="text-decoration: underline;">008</span>39  0.000<span style="text-decoration: underline;">337</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>      49          10.0   0.000<span style="text-decoration: underline;">002</span>80   0.000<span style="text-decoration: underline;">005</span>59  0.000<span style="text-decoration: underline;">169</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>      50          10     0.000<span style="text-decoration: underline;">002</span>80   0.000<span style="text-decoration: underline;">002</span>80  0</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>      45          10.0         10.1         60.3  0.000<span style="text-decoration: underline;">843</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>      46          10.0         10.1         50.3  0.000<span style="text-decoration: underline;">674</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>      47          10.0         10.1         40.2  0.000<span style="text-decoration: underline;">506</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>      48          10.0         10.1         30.2  0.000<span style="text-decoration: underline;">337</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>      49          10.0         10.1         20.1  0.000<span style="text-decoration: underline;">169</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>      50          10           10.1         10.1  0</span></span></code></pre></div>
 <p>A vazão total requerida na entrada da linha lateral
 (<code>section_flow</code> no emissor 1) e a pressão de serviço
 necessária no início da linha (<code>pressure_head</code> no emissor 1)
@@ -143,22 +151,24 @@ são obtidas diretamente da primeira linha do tibble retornado:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Pressão requerida na entrada da linha lateral (mca)</span></span>
 <span><span class="va">perfil_nivel</span><span class="op">$</span><span class="va">pressure_head</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span></span>
-<span><span class="co">#&gt; [1] 10.98282</span></span>
+<span><span class="co">#&gt; [1] 10.98152</span></span>
 <span></span>
 <span><span class="co"># Vazão total na entrada da linha lateral (L/h)</span></span>
-<span><span class="va">perfil_nivel</span><span class="op">$</span><span class="va">section_flow</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">*</span> <span class="fl">3.6e6</span></span>
-<span><span class="co">#&gt; [1] 509.8596</span></span></code></pre></div>
+<span><span class="va">perfil_nivel</span><span class="op">$</span><span class="va">section_flow</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span></span>
+<span><span class="co">#&gt; [1] 509.4665</span></span></code></pre></div>
 <hr>
 </div>
 <div class="section level2">
 <h2 id="efeito-da-declividade-do-terreno-slope">2. Efeito da Declividade do Terreno (<code>slope</code>)<a class="anchor" aria-label="anchor" href="#efeito-da-declividade-do-terreno-slope"></a>
 </h2>
 <p>O argumento <code>slope</code> representa a declividade em
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mtext mathvariant="normal">m m</mtext><mrow><mi>−</mi><mn>1</mn></mrow></msup><annotation encoding="application/x-tex">\text{m m}^{-1}</annotation></semantics></math>:
-* Valores <strong>positivos</strong> (<code>slope &gt; 0</code>) indicam
-terreno em aclive (subida no sentido do escoamento). * Valores
-<strong>negativos</strong> (<code>slope &lt; 0</code>) indicam terreno
-em declive (descida no sentido do escoamento).</p>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mtext mathvariant="normal">m m</mtext><mrow><mi>−</mi><mn>1</mn></mrow></msup><annotation encoding="application/x-tex">\text{m m}^{-1}</annotation></semantics></math>:</p>
+<ul>
+<li>Valores <strong>positivos</strong> (<code>slope &gt; 0</code>)
+indicam terreno em aclive (subida no sentido do escoamento).</li>
+<li>Valores <strong>negativos</strong> (<code>slope &lt; 0</code>)
+indicam terreno em declive (descida no sentido do escoamento).</li>
+</ul>
 <p>Abaixo comparamos a distribuição de carga de pressão ao longo da
 mesma linha lateral sob três condições topográficas: nível
 (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>0</mn><mi>%</mi></mrow><annotation encoding="application/x-tex">0\%</annotation></semantics></math>),
@@ -173,8 +183,9 @@ e declive
 <span>  spacing <span class="op">=</span> <span class="fl">0.30</span>,</span>
 <span>  n_emitters <span class="op">=</span> <span class="fl">50</span>,</span>
 <span>  slope <span class="op">=</span> <span class="fl">0.02</span>,</span>
-<span>  emitter_coef <span class="op">=</span> <span class="fl">8.84e-7</span>,</span>
+<span>  emitter_coef <span class="op">=</span> <span class="fl">3.18</span>,</span>
 <span>  emitter_exp <span class="op">=</span> <span class="fl">0.50</span>,</span>
+<span>  flow_unit <span class="op">=</span> <span class="st">"L/h"</span>,</span>
 <span>  roughness <span class="op">=</span> <span class="fl">1.5e-6</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -184,8 +195,9 @@ e declive
 <span>  spacing <span class="op">=</span> <span class="fl">0.30</span>,</span>
 <span>  n_emitters <span class="op">=</span> <span class="fl">50</span>,</span>
 <span>  slope <span class="op">=</span> <span class="op">-</span><span class="fl">0.02</span>,</span>
-<span>  emitter_coef <span class="op">=</span> <span class="fl">8.84e-7</span>,</span>
+<span>  emitter_coef <span class="op">=</span> <span class="fl">3.18</span>,</span>
 <span>  emitter_exp <span class="op">=</span> <span class="fl">0.50</span>,</span>
+<span>  flow_unit <span class="op">=</span> <span class="st">"L/h"</span>,</span>
 <span>  roughness <span class="op">=</span> <span class="fl">1.5e-6</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -205,6 +217,61 @@ e declive
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_classic</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p><img src="perfil-linha-lateral_files/figure-html/slope-comparison-1.png" class="r-plt" alt="" width="840"></p>
+<hr>
+</div>
+<div class="section level2">
+<h2 id="comparação-entre-equações-de-perda-de-carga-method">3. Comparação entre Equações de Perda de Carga
+(<code>method</code>)<a class="anchor" aria-label="anchor" href="#compara%C3%A7%C3%A3o-entre-equa%C3%A7%C3%B5es-de-perda-de-carga-method"></a>
+</h2>
+<p>Além de Darcy-Weisbach (<code>method = "darcy"</code>, padrão),
+<code><a href="../reference/calc_backstep.html">calc_backstep()</a></code> permite utilizar as equações empíricas de
+Flamant (<code>method = "flamant"</code>) e Hazen-Williams
+(<code>method = "hw"</code>), repassando parâmetros específicos de cada
+equação (como <code>roughness</code> ou <code>coef</code>) via
+<code>...</code>:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">perfil_flamant</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calc_backstep.html">calc_backstep</a></span><span class="op">(</span></span>
+<span>  end_pressure <span class="op">=</span> <span class="fl">10</span>,</span>
+<span>  diameter <span class="op">=</span> <span class="fl">0.012</span>,</span>
+<span>  spacing <span class="op">=</span> <span class="fl">0.30</span>,</span>
+<span>  n_emitters <span class="op">=</span> <span class="fl">50</span>,</span>
+<span>  slope <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>  emitter_coef <span class="op">=</span> <span class="fl">3.18</span>,</span>
+<span>  emitter_exp <span class="op">=</span> <span class="fl">0.50</span>,</span>
+<span>  method <span class="op">=</span> <span class="st">"flamant"</span>,</span>
+<span>  flow_unit <span class="op">=</span> <span class="st">"L/h"</span>,</span>
+<span>  coef <span class="op">=</span> <span class="fl">0.000135</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">perfil_hw</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calc_backstep.html">calc_backstep</a></span><span class="op">(</span></span>
+<span>  end_pressure <span class="op">=</span> <span class="fl">10</span>,</span>
+<span>  diameter <span class="op">=</span> <span class="fl">0.012</span>,</span>
+<span>  spacing <span class="op">=</span> <span class="fl">0.30</span>,</span>
+<span>  n_emitters <span class="op">=</span> <span class="fl">50</span>,</span>
+<span>  slope <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>  emitter_coef <span class="op">=</span> <span class="fl">3.18</span>,</span>
+<span>  emitter_exp <span class="op">=</span> <span class="fl">0.50</span>,</span>
+<span>  method <span class="op">=</span> <span class="st">"hw"</span>,</span>
+<span>  flow_unit <span class="op">=</span> <span class="st">"L/h"</span>,</span>
+<span>  coef <span class="op">=</span> <span class="fl">140</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">dados_metodos</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">perfil_nivel</span>, equacao <span class="op">=</span> <span class="st">"Darcy-Weisbach"</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">perfil_flamant</span>, equacao <span class="op">=</span> <span class="st">"Flamant (b = 0,000135)"</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">perfil_hw</span>, equacao <span class="op">=</span> <span class="st">"Hazen-Williams (C = 140)"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">dados_metodos</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">emitter</span>, y <span class="op">=</span> <span class="va">pressure_head</span>, color <span class="op">=</span> <span class="va">equacao</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>linewidth <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
+<span>    title <span class="op">=</span> <span class="st">"Comparação de Equações de Perda de Carga na Linha Lateral"</span>,</span>
+<span>    x <span class="op">=</span> <span class="st">"Índice do Emissor (1 = Início da Linha)"</span>,</span>
+<span>    y <span class="op">=</span> <span class="st">"Carga de Pressão (mca)"</span>,</span>
+<span>    color <span class="op">=</span> <span class="st">"Equação"</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_classic</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><img src="perfil-linha-lateral_files/figure-html/method-comparison-1.png" class="r-plt" alt="" width="840"></p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

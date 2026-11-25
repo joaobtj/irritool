@@ -13,8 +13,10 @@ A função
 implementa o **método passo a passo** (*backstep procedure*), partindo
 da condição de contorno conhecida no último emissor (extremidade distal
 da linha) e avançando trecho a trecho em direção à derivação (início da
-linha), computando a perda de carga por Darcy-Weisbach via
-[`hf::calc_head_loss_darcy()`](https://joaobtj.github.io/hf/reference/calc_head_loss_darcy.html).
+linha). É possível escolher a equação de perda de carga do pacote `hf`
+por meio do argumento `method` (`"darcy"`, `"flamant"` ou `"hw"`) e
+definir a unidade de vazão diretamente em `flow_unit` (como `"m3/s"`,
+`"L/s"` ou `"L/h"`).
 
 ``` r
 
@@ -24,7 +26,7 @@ library(ggplot2)
 
 ------------------------------------------------------------------------
 
-## 1. Linha Lateral em Nível (`slope = 0`)
+## 1. Linha Lateral em Nível (`slope = 0`) e Unidade de Vazão (`flow_unit`)
 
 Considere uma linha lateral de polietileno com diâmetro interno
 $`D = 12\text{ mm}`$ ($`0,012\text{ m}`$), rugosidade absoluta
@@ -32,11 +34,12 @@ $`\varepsilon = 1,5 \times 10^{-6}\text{ m}`$, contendo $`50`$
 gotejadores espaçados a cada $`0,30\text{ m}`$ ($`L = 15\text{ m}`$).
 
 A relação vazão-pressão do emissor é dada por $`q = k \cdot H^x`$, com
-coeficiente
-$`k = 8,84 \times 10^{-7}\text{ m}^3\text{ s}^{-1}\text{ mca}^{-x}`$
-(equivalente a $`3,18\text{ L h}^{-1}`$ a $`1\text{ mca}`$) e expoente
-de descarga $`x = 0,50`$. Deseja-se manter uma pressão mínima no final
-da linha igual a $`10\text{ mca}`$:
+coeficiente $`k = 3,18\text{ L h}^{-1}\text{ mca}^{-x}`$ e expoente de
+descarga $`x = 0,50`$. Informando `flow_unit = "L/h"`, não é necessário
+converter manualmente o coeficiente do emissor para
+$`\text{m}^3\text{ s}^{-1}`$, e as vazões retornadas (`emitter_flow` e
+`section_flow`) já saem em $`\text{L h}^{-1}`$. Deseja-se manter uma
+pressão mínima no final da linha igual a $`10\text{ mca}`$:
 
 ``` r
 
@@ -46,8 +49,10 @@ perfil_nivel <- calc_backstep(
   spacing = 0.30,
   n_emitters = 50,
   slope = 0,
-  emitter_coef = 8.84e-7,
+  emitter_coef = 3.18,
   emitter_exp = 0.50,
+  method = "darcy",
+  flow_unit = "L/h",
   roughness = 1.5e-6
 )
 
@@ -55,22 +60,22 @@ head(perfil_nivel)
 #> # A tibble: 6 × 5
 #>   emitter pressure_head emitter_flow section_flow head_loss
 #>     <int>         <dbl>        <dbl>        <dbl>     <dbl>
-#> 1       1          11.0   0.00000293     0.000142    0.0540
-#> 2       2          10.9   0.00000292     0.000139    0.0521
-#> 3       3          10.9   0.00000292     0.000136    0.0501
-#> 4       4          10.8   0.00000291     0.000133    0.0482
-#> 5       5          10.8   0.00000290     0.000130    0.0463
-#> 6       6          10.7   0.00000290     0.000127    0.0445
+#> 1       1          11.0         10.5         509.    0.0540
+#> 2       2          10.9         10.5         499.    0.0520
+#> 3       3          10.9         10.5         488.    0.0501
+#> 4       4          10.8         10.5         478.    0.0482
+#> 5       5          10.8         10.4         467.    0.0463
+#> 6       6          10.7         10.4         457.    0.0445
 tail(perfil_nivel)
 #> # A tibble: 6 × 5
 #>   emitter pressure_head emitter_flow section_flow head_loss
 #>     <int>         <dbl>        <dbl>        <dbl>     <dbl>
-#> 1      45          10.0   0.00000280   0.0000168   0.000843
-#> 2      46          10.0   0.00000280   0.0000140   0.000675
-#> 3      47          10.0   0.00000280   0.0000112   0.000506
-#> 4      48          10.0   0.00000280   0.00000839  0.000337
-#> 5      49          10.0   0.00000280   0.00000559  0.000169
-#> 6      50          10     0.00000280   0.00000280  0
+#> 1      45          10.0         10.1         60.3  0.000843
+#> 2      46          10.0         10.1         50.3  0.000674
+#> 3      47          10.0         10.1         40.2  0.000506
+#> 4      48          10.0         10.1         30.2  0.000337
+#> 5      49          10.0         10.1         20.1  0.000169
+#> 6      50          10           10.1         10.1  0
 ```
 
 A vazão total requerida na entrada da linha lateral (`section_flow` no
@@ -82,21 +87,23 @@ do tibble retornado:
 
 # Pressão requerida na entrada da linha lateral (mca)
 perfil_nivel$pressure_head[1]
-#> [1] 10.98282
+#> [1] 10.98152
 
 # Vazão total na entrada da linha lateral (L/h)
-perfil_nivel$section_flow[1] * 3.6e6
-#> [1] 509.8596
+perfil_nivel$section_flow[1]
+#> [1] 509.4665
 ```
 
 ------------------------------------------------------------------------
 
 ## 2. Efeito da Declividade do Terreno (`slope`)
 
-O argumento `slope` representa a declividade em $`\text{m m}^{-1}`$: \*
-Valores **positivos** (`slope > 0`) indicam terreno em aclive (subida no
-sentido do escoamento). \* Valores **negativos** (`slope < 0`) indicam
-terreno em declive (descida no sentido do escoamento).
+O argumento `slope` representa a declividade em $`\text{m m}^{-1}`$:
+
+- Valores **positivos** (`slope > 0`) indicam terreno em aclive (subida
+  no sentido do escoamento).
+- Valores **negativos** (`slope < 0`) indicam terreno em declive
+  (descida no sentido do escoamento).
 
 Abaixo comparamos a distribuição de carga de pressão ao longo da mesma
 linha lateral sob três condições topográficas: nível ($`0\%`$), aclive
@@ -110,8 +117,9 @@ perfil_aclive <- calc_backstep(
   spacing = 0.30,
   n_emitters = 50,
   slope = 0.02,
-  emitter_coef = 8.84e-7,
+  emitter_coef = 3.18,
   emitter_exp = 0.50,
+  flow_unit = "L/h",
   roughness = 1.5e-6
 )
 
@@ -121,8 +129,9 @@ perfil_declive <- calc_backstep(
   spacing = 0.30,
   n_emitters = 50,
   slope = -0.02,
-  emitter_coef = 8.84e-7,
+  emitter_coef = 3.18,
   emitter_exp = 0.50,
+  flow_unit = "L/h",
   roughness = 1.5e-6
 )
 
@@ -144,3 +153,60 @@ ggplot(dados_comparacao, aes(x = emitter, y = pressure_head, color = cenario)) +
 ```
 
 ![](perfil-linha-lateral_files/figure-html/slope-comparison-1.png)
+
+------------------------------------------------------------------------
+
+## 3. Comparação entre Equações de Perda de Carga (`method`)
+
+Além de Darcy-Weisbach (`method = "darcy"`, padrão),
+[`calc_backstep()`](https://joaobtj.github.io/irritool/reference/calc_backstep.md)
+permite utilizar as equações empíricas de Flamant (`method = "flamant"`)
+e Hazen-Williams (`method = "hw"`), repassando parâmetros específicos de
+cada equação (como `roughness` ou `coef`) via `...`:
+
+``` r
+
+perfil_flamant <- calc_backstep(
+  end_pressure = 10,
+  diameter = 0.012,
+  spacing = 0.30,
+  n_emitters = 50,
+  slope = 0,
+  emitter_coef = 3.18,
+  emitter_exp = 0.50,
+  method = "flamant",
+  flow_unit = "L/h",
+  coef = 0.000135
+)
+
+perfil_hw <- calc_backstep(
+  end_pressure = 10,
+  diameter = 0.012,
+  spacing = 0.30,
+  n_emitters = 50,
+  slope = 0,
+  emitter_coef = 3.18,
+  emitter_exp = 0.50,
+  method = "hw",
+  flow_unit = "L/h",
+  coef = 140
+)
+
+dados_metodos <- rbind(
+  cbind(perfil_nivel, equacao = "Darcy-Weisbach"),
+  cbind(perfil_flamant, equacao = "Flamant (b = 0,000135)"),
+  cbind(perfil_hw, equacao = "Hazen-Williams (C = 140)")
+)
+
+ggplot(dados_metodos, aes(x = emitter, y = pressure_head, color = equacao)) +
+  geom_line(linewidth = 1) +
+  labs(
+    title = "Comparação de Equações de Perda de Carga na Linha Lateral",
+    x = "Índice do Emissor (1 = Início da Linha)",
+    y = "Carga de Pressão (mca)",
+    color = "Equação"
+  ) +
+  theme_classic()
+```
+
+![](perfil-linha-lateral_files/figure-html/method-comparison-1.png)
